@@ -43,7 +43,7 @@ const initialForm = (): EventForm => ({
   published: false,
   start: '',
   end: '',
-  location: 'Deckout Cafe · Quezon City',
+  location: 'Decked Out Cafe · Quezon City',
   format: 'Offline',
   entrants: '0',
   capacity: '32',

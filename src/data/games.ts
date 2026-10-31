@@ -7,7 +7,7 @@ export const games: Game[] = [
     shortName: 'Bayblade',
     tagline: 'Spin-out arena circuit',
     description:
-      'High-velocity top battles decided by launch precision, stamina and pure impact. The Deckout arena circuit runs open brackets through to the Steel Storm finals.',
+      'High-velocity top battles decided by launch precision, stamina and pure impact. The Decked Out arena circuit runs open brackets through to the Steel Storm finals.',
     accent: '#ff5b1f',
     accentSoft: 'rgba(255, 91, 31, 0.14)',
     accentTwo: '#56e0ff',

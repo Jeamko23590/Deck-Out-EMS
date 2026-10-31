@@ -30,7 +30,7 @@ export function AdminLoginPage() {
   return (
     <main id="main" className="admin-login">
       <div className="admin-login__brand">
-        <Link to="/" aria-label="Deckout Cafe home">
+        <Link to="/" aria-label="Decked Out Cafe home">
           <BrandLogo />
         </Link>
         <span>STAFF WORKSPACE · DEMO</span>

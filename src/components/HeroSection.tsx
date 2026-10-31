@@ -150,7 +150,7 @@ export function HeroSection() {
             </div>
           </div>
           <p className="hero__disclaimer">
-            Deckout Cafe is a fictional club concept. Event data, prizes and rankings are sample content.
+            Decked Out Cafe is a fictional club concept. Event data, prizes and rankings are sample content.
           </p>
         </div>
       </div>

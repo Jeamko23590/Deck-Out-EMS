@@ -23,7 +23,7 @@ export function AdminLayout() {
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
-        <Link to="/admin" className="admin-brand" aria-label="Deckout Cafe admin dashboard">
+        <Link to="/admin" className="admin-brand" aria-label="Decked Out Cafe admin dashboard">
           <BrandLogo />
           <span className="admin-brand__tag">CONTROL ROOM</span>
         </Link>

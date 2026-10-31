@@ -8,7 +8,7 @@ export function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <Link to="/" className="brand" aria-label="Deckout Cafe home">
+            <Link to="/" className="brand" aria-label="Decked Out Cafe home">
               <BrandLogo footer />
             </Link>
             <p>
@@ -50,7 +50,7 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>© 2026 DECKOUT CAFE. A fictional club concept. All rights reserved.</p>
+          <p>© 2026 DECKED OUT CAFE. A fictional club concept. All rights reserved.</p>
           <p>
             Not affiliated with or endorsed by any game publisher. All game names and trademarks
             belong to their respective owners. Event, prize and ranking data is invented for

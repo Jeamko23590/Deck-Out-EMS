@@ -62,7 +62,7 @@ export function GamesPage() {
             ))}
           </div>
           <p className="page-note">
-            Deckout Cafe is an independent concept. All circuits, events and competitors shown are
+            Decked Out Cafe is an independent concept. All circuits, events and competitors shown are
             fictional sample data. No publisher affiliation is implied.
           </p>
         </div>

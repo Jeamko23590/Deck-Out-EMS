@@ -52,7 +52,7 @@ export function Header() {
     <>
       <header className="site-header">
         <div className="container header-inner">
-          <Link to="/" className="brand" aria-label="Deckout Cafe home">
+          <Link to="/" className="brand" aria-label="Decked Out Cafe home">
             <BrandLogo />
           </Link>
 

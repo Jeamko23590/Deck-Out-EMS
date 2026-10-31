@@ -146,7 +146,7 @@ export function TournamentDetailsModal({ tournament, onClose, onResults }: Props
           <div className="details__note">
             <strong>{registrationStatusMessage(tournament)}</strong>
             <span>
-              Deckout Cafe is an independent frontend concept. This event, its prize pool and
+              Decked Out Cafe is an independent frontend concept. This event, its prize pool and
               participants are fictional sample data. The entry flow is a demo and takes no payment.
             </span>
           </div>
