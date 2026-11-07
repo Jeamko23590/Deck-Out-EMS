@@ -42,6 +42,7 @@ export function HeroSection() {
     console.error(`HeroSection: Game not found for slug "${featuredLive.game}"`)
     return null
   }
+  
   const tickerItems = [
     ...results.slice(0, 4).map((result) => ({
       key: result.id,
