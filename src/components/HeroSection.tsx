@@ -6,7 +6,7 @@ import { isPublicTournament } from '../lib/events'
 import { useApp } from '../context/AppContext'
 
 const heroArtwork: Record<string, string> = {
-  bayblade: '/images/categories/backgrounds/beyblade-x.webp',
+  beyblade: '/images/categories/backgrounds/beyblade-x.webp',
   'cardfight-vanguard': '/images/categories/backgrounds/cardfight-vanguard.jpg',
   'cookie-run': '/images/categories/backgrounds/cookie-run-kingdom.jpg',
   cyberpunk: '/images/categories/backgrounds/cyberpunk-2077.jpg',
@@ -16,7 +16,7 @@ const heroArtwork: Record<string, string> = {
   'flesh-and-blood': '/images/categories/backgrounds/flesh-and-blood-kassai.webp',
 }
 const heroArtworkPosition: Record<string, string> = {
-  bayblade: '50% 48%',
+  beyblade: '50% 48%',
   'cardfight-vanguard': '50% 56%',
   'cookie-run': '52% 48%',
   cyberpunk: '50% 52%',

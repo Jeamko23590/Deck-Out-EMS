@@ -1,5 +1,5 @@
 export type GameSlug =
-  | 'bayblade'
+  | 'beyblade'
   | 'cardfight-vanguard'
   | 'cookie-run'
   | 'cyberpunk'

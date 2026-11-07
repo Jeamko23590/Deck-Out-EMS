@@ -7,7 +7,7 @@ const seedTournaments: TournamentSeed[] = [
   {
     id: 'bay-01',
     title: 'Neo Spin Circuit — Round 5',
-    game: 'bayblade',
+    game: 'beyblade',
     status: 'live',
     start: '2026-10-29T18:00:00',
     end: '2026-10-30T22:00:00',
@@ -23,7 +23,7 @@ const seedTournaments: TournamentSeed[] = [
   {
     id: 'bay-02',
     title: 'Volt Colosseum Open',
-    game: 'bayblade',
+    game: 'beyblade',
     status: 'upcoming',
     start: '2026-11-14T10:00:00',
     location: 'Tokyo, JP',
@@ -39,7 +39,7 @@ const seedTournaments: TournamentSeed[] = [
   {
     id: 'bay-03',
     title: 'Iron Ring Invitational',
-    game: 'bayblade',
+    game: 'beyblade',
     status: 'upcoming',
     start: '2026-12-05T12:00:00',
     location: 'Seoul, KR',
@@ -54,7 +54,7 @@ const seedTournaments: TournamentSeed[] = [
   {
     id: 'bay-04',
     title: 'Steel Storm Championship',
-    game: 'bayblade',
+    game: 'beyblade',
     status: 'ended',
     start: '2026-10-11T11:00:00',
     location: 'Osaka, JP',

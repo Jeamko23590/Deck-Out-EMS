@@ -17,7 +17,7 @@ const seedResults: TournamentResult[] = [
     id: 'res-bay-04',
     tournamentId: 'bay-04',
     name: 'STEEL STORM CHAMPIONSHIP',
-    game: 'bayblade',
+    game: 'beyblade',
     date: '2026-10-11T11:00:00',
     location: 'Osaka, JP',
     format: 'Offline',

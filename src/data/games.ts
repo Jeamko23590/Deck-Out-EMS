@@ -2,8 +2,8 @@ import type { Game, GameSlug } from '../types'
 
 export const games: Game[] = [
   {
-    slug: 'bayblade',
-    name: 'BAYBLADE',
+    slug: 'beyblade',
+    name: 'BEYBLADE',
     shortName: 'Bayblade',
     tagline: 'Spin-out arena circuit',
     description:
@@ -12,7 +12,7 @@ export const games: Game[] = [
     accentSoft: 'rgba(255, 91, 31, 0.14)',
     accentTwo: '#56e0ff',
     surface: '#141312',
-    variant: 'bayblade',
+    variant: 'beyblade',
     seasonLabel: 'ARENA SERIES 05',
   },
   {

@@ -4,7 +4,7 @@ import { isPublicTournament } from '../lib/events'
 import { useApp } from '../context/AppContext'
 
 const categoryArtwork: Record<Game['slug'], { src: string; position: string }> = {
-  bayblade: { src: '/images/categories/backgrounds/beyblade-x.webp', position: '50% 48%' },
+  beyblade: { src: '/images/categories/backgrounds/beyblade-x.webp', position: '50% 48%' },
   'cardfight-vanguard': {
     src: '/images/categories/backgrounds/cardfight-vanguard.jpg',
     position: '50% 56%',

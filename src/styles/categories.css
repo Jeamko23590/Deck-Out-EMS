@@ -1,6 +1,6 @@
 /* Shared category variables */
 
-.game--bayblade {
+.game--beyblade {
   --cat: #ff5b1f;
   --cat-two: #56e0ff;
   --cat-soft: rgba(255, 91, 31, 0.13);
@@ -57,10 +57,10 @@
 }
 
 /* ------------------------------------------------------------------
-   BAYBLADE — brushed metal, impact angles, spinning-disc energy
+   BEYBLADE — brushed metal, impact angles, spinning-disc energy
 ------------------------------------------------------------------ */
 
-.cat-card.cat--bayblade {
+.cat-card.cat--beyblade {
   background:
     linear-gradient(105deg, transparent 0 38%, rgba(255, 255, 255, 0.035) 38% 39%, transparent 39%),
     linear-gradient(135deg, #1c1b19 0%, #0d0d0e 54%, #151413 100%);
@@ -68,7 +68,7 @@
   border-radius: 2px;
 }
 
-.cat-card.cat--bayblade::before {
+.cat-card.cat--beyblade::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -81,7 +81,7 @@
   );
 }
 
-.cat-card.cat--bayblade::after {
+.cat-card.cat--beyblade::after {
   content: '';
   position: absolute;
   top: 0;
@@ -93,38 +93,38 @@
   background: linear-gradient(135deg, transparent 49%, rgba(255, 91, 31, 0.16) 50%);
 }
 
-.cat-card.cat--bayblade h3 {
+.cat-card.cat--beyblade h3 {
   font-style: italic;
   font-weight: 800;
   letter-spacing: 0.012em;
   transform: translateX(-1px);
 }
 
-.cat-card.cat--bayblade .cat-card__motif {
+.cat-card.cat--beyblade .cat-card__motif {
   color: #ff8a5c;
   opacity: 0.34;
 }
 
-.cat-card.cat--bayblade .cat-card__count {
+.cat-card.cat--beyblade .cat-card__count {
   border-color: rgba(255, 91, 31, 0.34);
   color: #ffa57e;
   background: rgba(255, 91, 31, 0.07);
 }
 
-.cat-card.cat--bayblade .cat-card__tagline {
+.cat-card.cat--beyblade .cat-card__tagline {
   color: #a99b93;
 }
 
-.cat-card.cat--bayblade .cat-card__foot {
+.cat-card.cat--beyblade .cat-card__foot {
   border-top-color: rgba(255, 91, 31, 0.24);
 }
 
-.cat-card.cat--bayblade:hover {
+.cat-card.cat--beyblade:hover {
   border-color: rgba(255, 91, 31, 0.6);
   box-shadow: 0 18px 42px rgba(255, 91, 31, 0.09);
 }
 
-.cat-card.cat--bayblade:hover .cat-card__motif {
+.cat-card.cat--beyblade:hover .cat-card__motif {
   opacity: 0.55;
   transform: rotate(22deg) scale(1.06);
 }
@@ -688,7 +688,7 @@
 
 /* Category-specific detail accents */
 
-.game-banner.cat--bayblade .game-banner__ring {
+.game-banner.cat--beyblade .game-banner__ring {
   border-radius: 4px;
   transform: rotate(45deg);
 }

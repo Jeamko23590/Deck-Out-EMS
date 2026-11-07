@@ -29,7 +29,7 @@ const build = (game: GameSlug, rows: Row[]): LeaderboardEntry[] =>
   }))
 
 export const leaderboard: LeaderboardEntry[] = [
-  ...build('bayblade', [
+  ...build('beyblade', [
     ['Kai Renjiro', 'Team Eclipse', 'JP', 'APAC', 980, 34, 8, 3, 1],
     ['Mara Voss', 'Team Ironveil', 'DE', 'EMEA', 910, 31, 7, 2, 2],
     ['Sena Aoki', 'Team Eclipse', 'JP', 'APAC', 884, 30, 6, 4, 1],

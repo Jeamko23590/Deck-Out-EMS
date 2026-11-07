@@ -40,7 +40,7 @@ const line = {
 }
 
 const motifs: Record<GameSlug, (uid: string) => ReactNode> = {
-  bayblade: (uid) => (
+  beyblade: (uid) => (
     <g {...line} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="80" cy="82" r="56" opacity="0.16" strokeDasharray="2 8" />
       <circle cx="80" cy="82" r="43" opacity="0.38" />
