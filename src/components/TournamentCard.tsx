@@ -13,10 +13,12 @@ interface TournamentCardProps {
 }
 
 export function TournamentCard({ tournament, onOpen, onResults }: TournamentCardProps) {
-  const game = gameBySlug(tournament.game)!
+  const game = gameBySlug(tournament.game)
   const result = resultByTournamentId(tournament.id)
   const { isFavorite, toggleFavorite } = useApp()
   const saved = isFavorite(tournament.id)
+
+  if (!game) return null
 
   const action = tournamentAction(tournament, Boolean(result))
   const actionLabel = action.label

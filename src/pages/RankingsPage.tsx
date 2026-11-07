@@ -46,7 +46,8 @@ export function RankingsPage() {
         <div className="container">
           <div className="podium">
             {podium.map((entry, index) => {
-              const game = gameBySlug(entry.game)!
+              const game = gameBySlug(entry.game)
+              if (!game) return null
               return (
                 <article
                   key={entry.id}

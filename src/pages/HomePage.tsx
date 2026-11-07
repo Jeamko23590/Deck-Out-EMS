@@ -97,7 +97,8 @@ export function HomePage() {
 
           <div className="rank-preview">
             {topPlayers.map((entry, index) => {
-              const game = gameBySlug(entry.game)!
+              const game = gameBySlug(entry.game)
+              if (!game) return null
               return (
                 <Link to="/rankings" className={`rank-preview__row game--${entry.game}`} key={entry.id}>
                   <span className="rank-preview__pos">{String(index + 1).padStart(2, '0')}</span>

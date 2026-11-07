@@ -125,7 +125,8 @@ export function Leaderboard({
           </div>
 
           {rows.map((entry: LeaderboardEntry, index) => {
-            const entryGame = gameBySlug(entry.game)!
+            const entryGame = gameBySlug(entry.game)
+            if (!entryGame) return null
             return (
               <div className="lb__row" role="row" key={entry.id}>
                 <span className="lb__pos" role="cell">
