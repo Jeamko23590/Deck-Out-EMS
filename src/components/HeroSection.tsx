@@ -38,7 +38,10 @@ export function HeroSection() {
     .reduce((total, tournament) => total + tournament.prize, 0)
   if (!featuredLive) return null
   const liveGame = gameBySlug(featuredLive.game)
-  if (!liveGame) return null
+  if (!liveGame) {
+    console.error(`HeroSection: Game not found for slug "${featuredLive.game}"`)
+    return null
+  }
   const tickerItems = [
     ...results.slice(0, 4).map((result) => ({
       key: result.id,
