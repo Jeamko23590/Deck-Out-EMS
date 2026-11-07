@@ -37,7 +37,8 @@ export function HeroSection() {
     .filter((tournament) => tournament.status !== 'cancelled')
     .reduce((total, tournament) => total + tournament.prize, 0)
   if (!featuredLive) return null
-  const liveGame = gameBySlug(featuredLive.game)!
+  const liveGame = gameBySlug(featuredLive.game)
+  if (!liveGame) return null
   const tickerItems = [
     ...results.slice(0, 4).map((result) => ({
       key: result.id,

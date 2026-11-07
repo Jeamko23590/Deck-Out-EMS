@@ -4,7 +4,7 @@ export const games: Game[] = [
   {
     slug: 'beyblade',
     name: 'BEYBLADE',
-    shortName: 'Bayblade',
+    shortName: 'Beyblade',
     tagline: 'Spin-out arena circuit',
     description:
       'High-velocity top battles decided by launch precision, stamina and pure impact. The Decked Out arena circuit runs open brackets through to the Steel Storm finals.',
