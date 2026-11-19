@@ -18,10 +18,10 @@ export function AdminLoginPage() {
   const destination =
     (location.state as { from?: string } | null)?.from ?? '/admin'
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (!login(email, password)) {
-      setError('Those demo credentials do not match. Use the account shown below.')
+    if (!await login(email, password)) {
+      setError('Unable to sign in. Check your POS admin email and password.')
       return
     }
     navigate(destination, { replace: true })
@@ -33,7 +33,7 @@ export function AdminLoginPage() {
         <Link to="/" aria-label="Decked Out Cafe home">
           <BrandLogo />
         </Link>
-        <span>STAFF WORKSPACE · DEMO</span>
+        <span>STAFF WORKSPACE</span>
       </div>
 
       <div className="admin-login__grid">
@@ -73,7 +73,7 @@ export function AdminLoginPage() {
                   setError('')
                 }}
                 autoComplete="current-password"
-                placeholder="Enter demo password"
+                placeholder="Enter your password"
               />
             </label>
             {error && (
@@ -89,11 +89,6 @@ export function AdminLoginPage() {
             </button>
           </form>
 
-          <div className="admin-login__credentials">
-            <span>Demo credentials</span>
-            <code>admin@deckout.cafe</code>
-            <code>deckout2026</code>
-          </div>
 
           <Link to="/" className="admin-login__back">
             ← Return to the public site
@@ -120,8 +115,7 @@ export function AdminLoginPage() {
               </div>
             </div>
             <p className="admin-login__note">
-              This workspace is a local demo. Credentials and operations are not connected to a
-              real authentication or payment service.
+              Sign in with an active administrator account from the POS staff directory.
             </p>
           </div>
         </aside>

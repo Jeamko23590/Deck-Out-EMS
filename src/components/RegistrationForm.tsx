@@ -70,16 +70,16 @@ export function RegistrationForm({
     if (form.reference.trim().length < 5) {
       next.reference = 'Enter the reference number from your payment.'
     }
-    if (!form.consent) next.consent = 'Confirm that you understand this is a demo entry.'
+    if (!form.consent) next.consent = 'Confirm the entry and payment reference details are accurate.'
     setErrors(next)
     return Object.keys(next).length === 0
   }
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (!validate()) return
     setStatus('submitting')
-    const result = registerForTournament({
+    const result = await registerForTournament({
       tournamentId: tournament.id,
       name: form.name,
       email: form.email,
@@ -108,8 +108,8 @@ export function RegistrationForm({
         <p className="eyebrow">Entry submitted · payment pending</p>
         <h3>Seat requested, {form.name.trim().split(' ')[0]}.</h3>
         <p className="reg-success__copy">
-          Your demo entry for <strong>{tournament.title}</strong> is in the Admin review queue. A
-          staff member would normally verify the reference before confirming your seat.
+          Your entry for <strong>{tournament.title}</strong> is in the Admin review queue. A
+          staff member will verify the reference before confirming your seat.
         </p>
         <div className="reg-success__code">
           <span>Registration reference</span>
@@ -136,8 +136,8 @@ export function RegistrationForm({
           </div>
         </dl>
         <div className="reg-note">
-          <strong>Demo only</strong>
-          <span>No money was taken. This record is stored in your browser.</span>
+          <strong>Awaiting staff review</strong>
+          <span>Your registration and payment reference are saved for event staff.</span>
         </div>
         <button type="button" className="btn btn--primary" onClick={onClose}>
           Back to events
@@ -222,8 +222,7 @@ export function RegistrationForm({
         <div>
           <p className="eyebrow">Payment details</p>
           <p className="reg-form__section-copy">
-            Submit a reference for the demo amount of {formatCurrency(tournament.entryFee)}. No
-            payment is processed or validated by a real provider.
+            Submit the reference for your {formatCurrency(tournament.entryFee)} entry payment.
           </p>
         </div>
         <span className="reg-form__amount">{formatCurrency(tournament.entryFee)}</span>
@@ -273,8 +272,8 @@ export function RegistrationForm({
           onChange={(event) => update('consent', event.target.checked)}
         />
         <span>
-          I understand this is a frontend demo. No details are sent to a real organiser, no money is
-          taken, and my entry will wait in the local Admin review queue.
+          I confirm the payment reference is accurate and understand my entry will wait in the Admin
+          review queue until staff verifies it.
         </span>
       </label>
       {errors.consent && <span className="field__error">{errors.consent}</span>}
@@ -283,11 +282,6 @@ export function RegistrationForm({
           {submitError}
         </p>
       )}
-
-      <div className="reg-note">
-        <strong>Demo flow</strong>
-        <span>Submitting stores a local registration and payment record in this browser only.</span>
-      </div>
 
       <div className="modal-actions">
         <button type="button" className="btn btn--ghost" onClick={onClose}>

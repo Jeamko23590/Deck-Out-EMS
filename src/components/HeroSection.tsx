@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { games, gameBySlug } from '../data/games'
-import { results } from '../data/results'
 import { flagEmoji, formatCompactCurrency, formatDateTime } from '../lib/format'
 import { isPublicTournament } from '../lib/events'
 import { useApp } from '../context/AppContext'
@@ -27,13 +26,13 @@ const heroArtworkPosition: Record<string, string> = {
 }
 
 export function HeroSection() {
-  const { tournaments } = useApp()
+  const { tournaments, results } = useApp()
   const publicTournaments = tournaments.filter(isPublicTournament)
   const featuredLive =
     publicTournaments.find((tournament) => tournament.status === 'live' && tournament.featured) ??
     publicTournaments.find((tournament) => tournament.status === 'live') ??
     publicTournaments.find((tournament) => tournament.status === 'upcoming')
-  const samplePrizePool = publicTournaments
+  const prizePool = publicTournaments
     .filter((tournament) => tournament.status !== 'cancelled')
     .reduce((total, tournament) => total + tournament.prize, 0)
   if (!featuredLive) return null
@@ -98,8 +97,8 @@ export function HeroSection() {
               <dd>{publicTournaments.length}</dd>
             </div>
             <div>
-              <dt>Sample prize pool</dt>
-              <dd>{formatCompactCurrency(samplePrizePool)}</dd>
+              <dt>Prize pool</dt>
+              <dd>{formatCompactCurrency(prizePool)}</dd>
             </div>
           </dl>
         </div>
@@ -155,7 +154,7 @@ export function HeroSection() {
             </div>
           </div>
           <p className="hero__disclaimer">
-            Decked Out Cafe is a fictional club concept. Event data, prizes and rankings are sample content.
+            Event, prize and ranking information is maintained by event organizers.
           </p>
         </div>
       </div>

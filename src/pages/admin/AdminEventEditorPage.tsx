@@ -88,6 +88,7 @@ export function AdminEventEditorPage() {
       : initialForm(),
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [saveError, setSaveError] = useState('')
 
   const update = <Key extends keyof EventForm>(key: Key, value: EventForm[Key]) => {
     setForm((current) => ({ ...current, [key]: value }))
@@ -120,9 +121,10 @@ export function AdminEventEditorPage() {
     return Object.keys(next).length === 0
   }
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (!validate()) return
+    setSaveError('')
 
     const payload = {
       title: form.title.trim(),
@@ -144,13 +146,17 @@ export function AdminEventEditorPage() {
       description: form.description.trim(),
     }
 
-    if (existing) {
-      updateTournament(existing.id, payload)
-      navigate(`/admin/events/${existing.id}`)
-      return
+    try {
+      if (existing) {
+        await updateTournament(existing.id, payload)
+        navigate(`/admin/events/${existing.id}`)
+        return
+      }
+      const nextId = await addTournament(payload)
+      navigate(`/admin/events/${nextId}`)
+    } catch (cause) {
+      setSaveError(cause instanceof Error ? cause.message : 'Unable to save this event.')
     }
-    const nextId = addTournament(payload)
-    navigate(`/admin/events/${nextId}`)
   }
 
   if (id && !existing) {
@@ -158,7 +164,7 @@ export function AdminEventEditorPage() {
       <div className="admin-page">
         <div className="admin-empty">
           <strong>Event not found.</strong>
-          <span>It may have been deleted from this demo workspace.</span>
+          <span>It may have been removed.</span>
           <Link to="/admin/events" className="btn btn--ghost">
             Back to events
           </Link>
@@ -198,6 +204,7 @@ export function AdminEventEditorPage() {
       </header>
 
       <form className="admin-form" onSubmit={submit} noValidate>
+        {saveError && <p className="form-error" role="alert">{saveError}</p>}
         <div className="admin-form__main">
           <section className="admin-panel">
             <div className="admin-panel__head">
@@ -379,7 +386,7 @@ export function AdminEventEditorPage() {
                 <p className="eyebrow">03 · Money</p>
                 <h2>Entry & prize</h2>
               </div>
-              <span className="admin-panel__hint">PHP · sample values</span>
+              <span className="admin-panel__hint">PHP</span>
             </div>
 
             <div className="field-row">
@@ -492,10 +499,9 @@ export function AdminEventEditorPage() {
           </section>
 
           <section className="admin-panel admin-panel--muted">
-            <p className="eyebrow">Demo note</p>
+            <p className="eyebrow">Publishing</p>
             <p>
-              Changes save to this browser only. No event, payment or player data leaves this
-              device.
+              Changes save to the EMS event catalog. New events remain private until published.
             </p>
           </section>
         </aside>

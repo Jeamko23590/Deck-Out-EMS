@@ -9,6 +9,7 @@ import { GameCategoryPage } from './pages/GameCategoryPage'
 import { TournamentsPage } from './pages/TournamentsPage'
 import { RankingsPage } from './pages/RankingsPage'
 import { ResultsPage } from './pages/ResultsPage'
+import { MerchandisePage } from './pages/MerchandisePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { AdminLoginPage } from './pages/admin/AdminLoginPage'
@@ -17,6 +18,9 @@ import { AdminEventsPage } from './pages/admin/AdminEventsPage'
 import { AdminEventEditorPage } from './pages/admin/AdminEventEditorPage'
 import { AdminEventDetailPage } from './pages/admin/AdminEventDetailPage'
 import { AdminPaymentsPage } from './pages/admin/AdminPaymentsPage'
+import { AdminMerchandisePage } from './pages/admin/AdminMerchandisePage'
+import { AdminReportsPage } from './pages/admin/AdminReportsPage'
+import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -52,6 +56,9 @@ function AppShell() {
             <Route path="events/:id" element={<AdminEventDetailPage />} />
             <Route path="events/:id/edit" element={<AdminEventEditorPage />} />
             <Route path="payments" element={<AdminPaymentsPage />} />
+            <Route path="merchandise" element={<AdminMerchandisePage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
@@ -65,6 +72,7 @@ function AppShell() {
               <Route path="/tournaments" element={<TournamentsPage />} />
               <Route path="/rankings" element={<RankingsPage />} />
               <Route path="/results" element={<ResultsPage />} />
+              <Route path="/merchandise" element={<MerchandisePage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>

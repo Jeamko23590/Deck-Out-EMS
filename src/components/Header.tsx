@@ -13,6 +13,7 @@ const navItems = [
   { to: '/tournaments', label: 'Tournaments' },
   { to: '/rankings', label: 'Rankings' },
   { to: '/results', label: 'Results' },
+  { to: '/merchandise', label: 'Merch' },
 ]
 
 export function Header() {

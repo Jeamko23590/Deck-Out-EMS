@@ -1,5 +1,57 @@
 /* ---------- Deckout Cafe staff workspace ---------- */
 
+.merch-admin-layout { display: grid; grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.4fr); align-items: start; gap: 18px; }
+.admin-report-grid { align-items: start; }
+.admin-report-payments, .admin-report-downloads { display: flex; flex-direction: column; }
+.admin-report-payments > div, .admin-report-downloads > article { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--admin-line); }
+.admin-report-payments > div > span, .admin-report-downloads article > span { display: flex; flex-direction: column; gap: 4px; }
+.admin-report-payments strong, .admin-report-downloads strong { text-transform: capitalize; }
+.admin-report-payments small, .admin-report-downloads small, .admin-report-note { color: var(--muted-2); font-size: 12px; }
+.admin-report-note a { color: var(--admin-amber); }
+.admin-user-management { display: grid; grid-template-columns: minmax(280px, .75fr) minmax(0, 1.45fr); align-items: start; gap: 18px; }
+.admin-user-form, .admin-user-list { display: flex; flex-direction: column; gap: 15px; padding: 20px; }
+.admin-user-form .field { margin: 0; }
+.admin-user-rows { display: flex; flex-direction: column; }
+.admin-user-row { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto auto; align-items: center; gap: 16px; padding: 14px 0; border-top: 1px solid var(--admin-line); }
+.admin-user-row__identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.admin-user-row__identity > span:last-child { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.admin-user-row__identity strong, .admin-user-row__identity small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-user-row__identity small, .admin-user-row__role { color: var(--muted-2); font-size: 12px; }
+.admin-user-row__actions { display: flex; gap: 10px; }
+.merch-admin-form { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
+.merch-admin-form .admin-panel__head, .merch-admin-list .admin-panel__head { margin-bottom: 2px; }
+.merch-admin-form .admin-panel__head h2, .merch-admin-list .admin-panel__head h2 { margin-top: 5px; font-size: 22px; }
+.merch-admin-form .field { margin: 0; }
+.merch-admin-preview { width: 100%; max-height: 180px; object-fit: cover; border: 1px solid var(--admin-line); }
+.merch-image-field { display: flex; flex-direction: column; gap: 10px; }
+.merch-image-mode { display: inline-flex; width: fit-content; padding: 3px; gap: 3px; border: 1px solid var(--admin-line); border-radius: 8px; }
+.merch-image-mode button { padding: 7px 11px; color: var(--muted-2); background: transparent; border: 0; border-radius: 5px; cursor: pointer; font: inherit; }
+.merch-image-mode button.is-active { color: var(--text); background: var(--admin-panel-2); box-shadow: 0 1px 4px #0002; }
+.merch-image-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+.merch-image-drop { display: flex; min-height: 104px; flex-direction: column; justify-content: center; align-items: center; gap: 6px; padding: 18px; text-align: center; border: 1px dashed var(--admin-line); border-radius: 9px; cursor: pointer; transition: border-color .15s, background .15s; }
+.merch-image-drop span { color: var(--muted-2); font-size: 12px; }
+.merch-image-drop.is-dragging, .merch-image-drop:hover { border-color: var(--admin-amber); background: var(--admin-amber-soft); }
+.merch-publish-toggle { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--admin-line); cursor: pointer; }
+.merch-publish-toggle input { accent-color: var(--admin-amber); }
+.merch-publish-toggle span { display: flex; flex-direction: column; gap: 3px; }
+.merch-publish-toggle strong { font-size: 11px; }
+.merch-publish-toggle small { color: var(--muted-2); font-size: 9px; }
+.merch-admin-list { padding: 20px; }
+.merch-admin-items { display: flex; flex-direction: column; }
+.merch-admin-item { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 14px 0; border-top: 1px solid var(--admin-line); }
+.merch-admin-item > img, .merch-admin-item__placeholder { width: 64px; height: 64px; object-fit: cover; background: #1a1917; }
+.merch-admin-item__placeholder { display: grid; place-items: center; color: var(--admin-amber); font-family: var(--font-display); font-size: 22px; font-weight: 800; }
+.merch-admin-item__details { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.merch-admin-item__details > strong { font-size: 12px; }
+.merch-admin-item__details > span { color: var(--muted-2); font-size: 9px; }
+.merch-admin-item__details .merch-tags { margin-top: 3px; }
+.merch-admin-item__actions { display: flex; align-items: flex-end; flex-direction: column; gap: 6px; }
+.merch-admin-item__actions .status { font-size: 8px; }
+.merch-admin-item__actions .text-btn { font-size: 9px; }
+@media (max-width: 1050px) { .merch-admin-layout, .admin-user-management { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .admin-user-row { grid-template-columns: minmax(0, 1fr) auto; } .admin-user-row__role { display: none; } }
+@media (max-width: 600px) { .merch-admin-item { grid-template-columns: 52px minmax(0, 1fr); } .merch-admin-item > img, .merch-admin-item__placeholder { width: 52px; height: 52px; } .merch-admin-item__actions { grid-column: 2; flex-direction: row; align-items: center; flex-wrap: wrap; } .admin-report-downloads > article { align-items: flex-start; flex-direction: column; } }
+
 .admin-shell {
   --admin-bg: #080809;
   --admin-panel: #101012;

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { games, gameBySlug } from '../data/games'
-import { resultsByGame } from '../data/results'
 import { isPublicTournament } from '../lib/events'
 import { useApp } from '../context/AppContext'
 import { TournamentCollection } from '../components/TournamentCollection'
@@ -39,7 +38,7 @@ const gameArtwork: Record<string, { src: string; position: string }> = {
 export function GameCategoryPage() {
   const { slug } = useParams()
   const game = gameBySlug(slug ?? '')
-  const { tournaments } = useApp()
+  const { tournaments, results, leaderboard } = useApp()
   const [tab, setTab] = useState<Tab>('tournaments')
 
   usePageTitle(game ? game.shortName : 'Circuit not found')
@@ -57,7 +56,8 @@ export function GameCategoryPage() {
       (tournament) => tournament.game === game.slug && isPublicTournament(tournament),
     ),
   )
-  const gameResults = resultsByGame(game.slug)
+  const gameResults = results.filter((result) => result.game === game.slug)
+  const gameLeaders = leaderboard.filter((entry) => entry.game === game.slug)
   const liveCount = events.filter((event) => event.status === 'live').length
   const prizeTotal = events
     .filter((event) => event.status !== 'cancelled')
@@ -66,7 +66,7 @@ export function GameCategoryPage() {
   const tabs: Array<{ value: Tab; label: string; count: number }> = [
     { value: 'tournaments', label: 'Tournaments', count: events.length },
     { value: 'results', label: 'Results', count: gameResults.length },
-    { value: 'standings', label: 'Standings', count: 5 },
+    { value: 'standings', label: 'Standings', count: gameLeaders.length },
   ]
 
   return (
@@ -131,7 +131,7 @@ export function GameCategoryPage() {
                   <dd>{String(liveCount).padStart(2, '0')}</dd>
                 </div>
                 <div>
-                  <dt>Sample prize pool</dt>
+              <dt>Prize pool</dt>
                   <dd>{formatCurrency(prizeTotal)}</dd>
                 </div>
               </dl>
@@ -170,8 +170,7 @@ export function GameCategoryPage() {
                 emptyMessage="This circuit has no events in the current window. Check back after the next calendar update."
               />
               <p className="page-note">
-                All {game.shortName} events, prize pools and participants shown are fictional sample
-                data for this frontend concept.
+                {game.shortName} event listings published by the organizers.
               </p>
             </div>
           )}
@@ -180,8 +179,7 @@ export function GameCategoryPage() {
             <div role="tabpanel" aria-label="Results">
               <ResultsGrid items={gameResults} />
               <p className="page-note">
-                Results are invented for demonstration and do not represent official tournament
-                outcomes.
+                Official results published by the organizers.
               </p>
             </div>
           )}

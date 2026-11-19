@@ -15,7 +15,7 @@ export function Footer() {
               A neighborhood gaming cafe and tournament club for players who take every turn
               seriously. Good tables, better coffee, and a front-row seat to the local meta.
             </p>
-            <span className="footer-badge">Demo club · sample events</span>
+            <span className="footer-badge">Events · Community · TCG</span>
           </div>
 
           <nav className="footer-col" aria-label="Explore">
@@ -25,6 +25,7 @@ export function Footer() {
             <Link to="/tournaments">Tournaments</Link>
             <Link to="/rankings">Rankings</Link>
             <Link to="/results">Results</Link>
+            <Link to="/merchandise">Merch</Link>
             <Link to="/admin/login">Staff access</Link>
           </nav>
 
@@ -50,11 +51,10 @@ export function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>© 2026 DECKED OUT CAFE. A fictional club concept. All rights reserved.</p>
+          <p>© 2026 DECKED OUT CAFE. All rights reserved.</p>
           <p>
             Not affiliated with or endorsed by any game publisher. All game names and trademarks
-            belong to their respective owners. Event, prize and ranking data is invented for
-            demonstration.
+            belong to their respective owners.
           </p>
         </div>
       </div>

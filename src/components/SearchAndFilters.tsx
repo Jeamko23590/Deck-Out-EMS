@@ -149,7 +149,6 @@ export function SearchAndFilters({
           <strong>{resultCount}</strong> {resultCount === 1 ? 'event' : 'events'} found
         </span>
         <div className="filters__foot-actions">
-          <span className="filters__demo">Demo calendar · sample data</span>
           <button type="button" className="text-btn" onClick={onReset}>
             Reset filters
           </button>

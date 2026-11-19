@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { GameSlug, LeaderboardEntry, LeaderboardSort } from '../types'
 import { games, gameBySlug } from '../data/games'
-import { leaderboard } from '../data/leaderboard'
+import { useApp } from '../context/AppContext'
 import { flagEmoji } from '../lib/format'
 import { EmptyState } from './ui/EmptyState'
 
@@ -25,10 +25,11 @@ export function Leaderboard({
   const [game, setGame] = useState<GameSlug | 'all'>(initialGame)
   const [sort, setSort] = useState<LeaderboardSort>('points')
   const [region, setRegion] = useState('all')
+  const { leaderboard } = useApp()
 
   const regions = useMemo(
     () => Array.from(new Set(leaderboard.map((entry) => entry.region))).sort(),
-    [],
+    [leaderboard],
   )
 
   const rows = useMemo(() => {
@@ -164,7 +165,7 @@ export function Leaderboard({
       )}
 
       <p className="leaderboard__note">
-        Sample standings for demonstration. Rank recalculates live based on the selected game, region
+        Standings from published event results. Rank recalculates based on the selected game, region
         and sort metric. Not an official ranking.
       </p>
     </div>

@@ -90,7 +90,7 @@ export function TournamentsPage() {
       : 'No events in this view'
   const emptyMessage = savedOnly
     ? 'Tap the heart on any tournament card to save it here. Saved events are stored in this browser.'
-    : 'Try a different game, format or status — or reset the filters to see the full sample calendar.'
+    : 'Try a different game, format or status — or reset the filters to see the full calendar.'
 
   return (
     <>
@@ -113,14 +113,13 @@ export function TournamentsPage() {
                 <span className="text-dim">calendar.</span>
               </h1>
               <p className="page-hero__lede">
-                Search the full sample calendar, filter by circuit and status, and save the events you
-                want to follow. Every registration is a clearly labelled demo flow.
+                Search the event calendar, filter by circuit and status, and save events you want to follow.
               </p>
             </div>
             <div className="page-hero__seal" aria-hidden="true">
               <span>EST.</span>
               <strong>2026</strong>
-              <span>SAMPLE DATA</span>
+              <span>EVENT CALENDAR</span>
             </div>
           </div>
         </div>

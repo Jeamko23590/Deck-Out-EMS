@@ -55,7 +55,7 @@ export function AdminEventsPage() {
         <div>
           <p className="eyebrow">Calendar management</p>
           <h1>Events</h1>
-          <p>{tournaments.length} events in the demo workspace, including drafts and cancellations.</p>
+          <p>{tournaments.length} events, including drafts and cancellations.</p>
         </div>
         <Link to="/admin/events/new" className="btn btn--primary">
           New event

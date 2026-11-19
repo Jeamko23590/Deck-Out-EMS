@@ -41,7 +41,7 @@ export function AdminEventDetailPage() {
       <div className="admin-page">
         <div className="admin-empty">
           <strong>Event not found.</strong>
-          <span>It may have been deleted from this demo workspace.</span>
+          <span>It may have been removed.</span>
           <Link to="/admin/events" className="btn btn--ghost">
             Back to events
           </Link>
@@ -66,10 +66,10 @@ export function AdminEventDetailPage() {
     event.capacity > 0 ? Math.min(100, Math.round((event.entrants / event.capacity) * 100)) : 0
   const transitions = statusTransitions[event.status]
 
-  const applyTransition = (status: TournamentStatus) => {
+  const applyTransition = async (status: TournamentStatus) => {
     setError('')
     setFeedback('')
-    const result = setTournamentStatus(event.id, status)
+    const result = await setTournamentStatus(event.id, status)
     if (!result.ok) {
       setError(result.error ?? 'Unable to update status.')
       return
@@ -78,10 +78,10 @@ export function AdminEventDetailPage() {
     setFeedback(`Event moved to ${statusLabel[status].toLowerCase()}.`)
   }
 
-  const handleUnpublish = () => {
+  const handleUnpublish = async () => {
     setError('')
     setFeedback('')
-    const result = unpublishTournament(event.id)
+    const result = await unpublishTournament(event.id)
     if (!result.ok) {
       setError(result.error ?? 'Unable to unpublish event.')
       return
@@ -89,8 +89,8 @@ export function AdminEventDetailPage() {
     setFeedback('Event returned to draft and removed from the public calendar.')
   }
 
-  const handleDelete = () => {
-    const result = deleteTournament(event.id)
+  const handleDelete = async () => {
+    const result = await deleteTournament(event.id)
     if (!result.ok) {
       setError(result.error ?? 'Unable to delete event.')
       setConfirmDelete(false)
@@ -173,7 +173,7 @@ export function AdminEventDetailPage() {
         <article className="admin-stat">
           <span className="admin-stat__label">Verified revenue</span>
           <strong>{formatCurrency(verifiedRevenue)}</strong>
-          <span className="admin-stat__meta">Sample entry fees only</span>
+          <span className="admin-stat__meta">Entry fees for verified registrations</span>
         </article>
       </section>
 
@@ -190,7 +190,7 @@ export function AdminEventDetailPage() {
           {eventRegistrations.length === 0 ? (
             <div className="admin-empty">
               <strong>No registrations yet.</strong>
-              <span>Demo entries from the public event page will land here.</span>
+              <span>Registrations from the public event page will appear here.</span>
             </div>
           ) : (
             <div className="admin-table-wrap">
@@ -243,8 +243,8 @@ export function AdminEventDetailPage() {
                             <button
                               type="button"
                               className="text-btn"
-                              onClick={() => {
-                                const result = setRegistrationStatus(
+                              onClick={async () => {
+                                const result = await setRegistrationStatus(
                                   registration.id,
                                   'waitlisted',
                                 )
@@ -397,7 +397,7 @@ export function AdminEventDetailPage() {
             </div>
             {confirmDelete ? (
               <div className="admin-confirm">
-                <p>Permanently delete this event from the demo workspace?</p>
+                <p>Permanently delete this event?</p>
                 <div>
                   <button
                     type="button"

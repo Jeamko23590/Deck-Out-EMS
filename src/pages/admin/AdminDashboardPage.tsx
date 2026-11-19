@@ -63,7 +63,7 @@ export function AdminDashboardPage() {
         <article className="admin-stat">
           <span className="admin-stat__label">Verified entry revenue</span>
           <strong>{formatCurrency(verifiedRevenue)}</strong>
-          <span className="admin-stat__meta">Sample total · verified only</span>
+          <span className="admin-stat__meta">Verified entry fees</span>
         </article>
         <article className="admin-stat">
           <span className="admin-stat__label">Confirmed players</span>
@@ -87,7 +87,7 @@ export function AdminDashboardPage() {
           {pendingPayments.length === 0 ? (
             <div className="admin-empty">
               <strong>Queue clear.</strong>
-              <span>New demo registrations will appear here for review.</span>
+              <span>New registrations will appear here for review.</span>
             </div>
           ) : (
             <div className="admin-list">

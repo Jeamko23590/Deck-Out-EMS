@@ -2,16 +2,22 @@ import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { BrandLogo } from '../../components/BrandLogo'
 import { useApp } from '../../context/AppContext'
 
-const navigation = [
+const navigation: { to: string; label: string; end: boolean; eyebrow: string; adminOnly?: boolean }[] = [
   { to: '/admin', label: 'Dashboard', end: true, eyebrow: 'Overview' },
   { to: '/admin/events', label: 'Events', end: false, eyebrow: 'Calendar' },
   { to: '/admin/payments', label: 'Payments', end: false, eyebrow: 'Review queue' },
+  { to: '/admin/merchandise', label: 'Merchandise', end: false, eyebrow: 'Shop catalog' },
+  { to: '/admin/reports', label: 'Reports', end: false, eyebrow: 'Insights' },
+  { to: '/admin/users', label: 'User management', end: false, eyebrow: 'Access control', adminOnly: true },
 ]
 
 export function AdminLayout() {
-  const { isAdmin, logout, registrations } = useApp()
+  const { isAdmin, emsRole, authLoading, logout, registrations } = useApp()
   const location = useLocation()
 
+  if (authLoading) {
+    return <main id="main" className="admin-content"><p className="eyebrow">Checking administrator session…</p></main>
+  }
   if (!isAdmin) {
     return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />
   }
@@ -29,7 +35,7 @@ export function AdminLayout() {
         </Link>
 
         <nav className="admin-nav" aria-label="Admin navigation">
-          {navigation.map((item) => (
+          {navigation.filter((item) => !item.adminOnly || emsRole === 'admin').map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -58,8 +64,8 @@ export function AdminLayout() {
           <div className="admin-user">
             <span className="admin-user__avatar">DA</span>
             <span>
-              <strong>Demo Admin</strong>
-              <em>Local demo session</em>
+              <strong>{emsRole === 'admin' ? 'Administrator' : 'EMS Staff'}</strong>
+              <em>Administrator session</em>
             </span>
           </div>
           <button type="button" className="admin-logout" onClick={logout}>
@@ -72,7 +78,7 @@ export function AdminLayout() {
         <header className="admin-topbar">
           <div>
             <span className="admin-topbar__dot" aria-hidden="true" />
-            Demo workspace · browser storage
+            Connected administrator workspace
           </div>
           <div className="admin-topbar__actions">
             <Link to="/tournaments" className="text-btn">

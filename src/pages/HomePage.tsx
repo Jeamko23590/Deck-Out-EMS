@@ -6,8 +6,6 @@ import { TournamentCollection } from '../components/TournamentCollection'
 import { ResultsGrid } from '../components/ResultsGrid'
 import { SectionHeader } from '../components/ui/SectionHeader'
 import { ArrowLink } from '../components/ui/EmptyState'
-import { results } from '../data/results'
-import { topOverall } from '../data/leaderboard'
 import { gameBySlug } from '../data/games'
 import { sortTournaments } from '../lib/format'
 import { isPublicTournament } from '../lib/events'
@@ -25,7 +23,7 @@ const tabs: Array<{ value: 'all' | PublicTournamentStatus; label: string }> = [
 export function HomePage() {
   usePageTitle()
   const [tab, setTab] = useState<'all' | PublicTournamentStatus>('all')
-  const { tournaments } = useApp()
+  const { tournaments, results, leaderboard } = useApp()
 
   const featured = useMemo(() => {
     const list = tournaments.filter(
@@ -36,7 +34,7 @@ export function HomePage() {
     return sortTournaments(filtered).slice(0, 6)
   }, [tab, tournaments])
 
-  const topPlayers = topOverall(6)
+  const topPlayers = leaderboard.slice(0, 6)
 
   return (
     <>
@@ -49,7 +47,7 @@ export function HomePage() {
           <SectionHeader
             kicker="On the calendar"
             title="Featured tournaments"
-            description="Live brackets, open registrations and championship nights across every circuit. All events are sample data."
+            description="Live brackets, open registrations and championship nights across every circuit."
             action={<ArrowLink to="/tournaments" label="View all events" />}
           />
           <div className="home-tabs" role="tablist" aria-label="Featured tournament status">
@@ -79,7 +77,7 @@ export function HomePage() {
           <SectionHeader
             kicker="Final standings"
             title="Latest results"
-            description="Recent championship nights, champions and final tables. Invented sample results for this concept."
+            description="Recent championship nights, champions and final tables."
             action={<ArrowLink to="/results" label="All results" />}
           />
           <ResultsGrid items={results.slice(0, 3)} />

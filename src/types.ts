@@ -20,6 +20,27 @@ export type PaymentStatus = 'pending' | 'verified' | 'rejected' | 'refunded'
 
 export type RegistrationStatus = 'pending' | 'confirmed' | 'waitlisted' | 'cancelled'
 
+export interface Merchandise {
+  id: string
+  name: string
+  description: string
+  imageUrl: string
+  price: number
+  stock: number
+  category: string
+  /** Existing records without a section are treated as standard merchandise. */
+  section?: 'merch' | 'singles' | 'cards'
+  /** Free-form TCG name so admins can add games without a code release. */
+  game?: string
+  setName?: string
+  rarity?: string
+  condition?: string
+  cardNumber?: string
+  tags: string[]
+  published: boolean
+  createdAt: string
+}
+
 export interface Game {
   slug: GameSlug
   name: string

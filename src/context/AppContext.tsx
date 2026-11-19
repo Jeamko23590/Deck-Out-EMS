@@ -13,24 +13,22 @@ import type {
   PaymentStatus,
   Registration,
   RegistrationStatus,
+  Merchandise,
   Tournament,
   TournamentStatus,
+  TournamentResult,
+  LeaderboardEntry,
 } from '../types'
-import { tournaments as seedTournaments } from '../data/tournaments'
-import { seedRegistrations } from '../data/registrations'
-import { canTransition, isRegistrationOpen, makeId, makeReference } from '../lib/events'
+import { isRegistrationOpen } from '../lib/events'
+import { authTokenKey, emsApi } from '../lib/api'
 
-const STORAGE_KEY = 'deckout-demo-store-v1'
-const LEGACY_FAVORITES_KEY = 'zyrus-saved-tournaments-v1'
-const ADMIN_SESSION_KEY = 'deckout-admin-session-v1'
-const ADMIN_EMAIL = 'admin@deckout.cafe'
-const ADMIN_PASSWORD = 'deckout2026'
-
-interface DemoStore {
-  version: 1
+interface AppStore {
   tournaments: Tournament[]
   registrations: Registration[]
   favorites: string[]
+  merchandise: Merchandise[]
+  results: TournamentResult[]
+  leaderboard: LeaderboardEntry[]
 }
 
 export interface RegistrationInput {
@@ -53,112 +51,76 @@ export interface ActionResult {
 interface AppContextValue {
   tournaments: Tournament[]
   registrations: Registration[]
+  merchandise: Merchandise[]
+  results: TournamentResult[]
+  leaderboard: LeaderboardEntry[]
   favorites: string[]
   isAdmin: boolean
+  emsRole: 'admin' | 'staff' | null
+  authLoading: boolean
   isFavorite: (id: string) => boolean
   toggleFavorite: (id: string) => void
-  registerForTournament: (input: RegistrationInput) => ActionResult
-  addTournament: (tournament: Omit<Tournament, 'id' | 'createdAt'>) => string
-  updateTournament: (id: string, patch: Partial<Tournament>) => void
-  setTournamentStatus: (id: string, status: TournamentStatus) => ActionResult
-  unpublishTournament: (id: string) => ActionResult
-  deleteTournament: (id: string) => ActionResult
-  reviewPayment: (registrationId: string, status: PaymentStatus, note: string) => ActionResult
+  registerForTournament: (input: RegistrationInput) => Promise<ActionResult>
+  addTournament: (tournament: Omit<Tournament, 'id' | 'createdAt'>) => Promise<string>
+  updateTournament: (id: string, patch: Partial<Tournament>) => Promise<void>
+  setTournamentStatus: (id: string, status: TournamentStatus) => Promise<ActionResult>
+  unpublishTournament: (id: string) => Promise<ActionResult>
+  deleteTournament: (id: string) => Promise<ActionResult>
+  reviewPayment: (registrationId: string, status: PaymentStatus, note: string) => Promise<ActionResult>
   setRegistrationStatus: (
     registrationId: string,
     status: RegistrationStatus,
-  ) => ActionResult
-  login: (email: string, password: string) => boolean
+  ) => Promise<ActionResult>
+  addMerchandise: (item: Omit<Merchandise, 'id' | 'createdAt'>) => Promise<string>
+  updateMerchandise: (id: string, patch: Partial<Merchandise>) => Promise<void>
+  archiveMerchandise: (id: string) => Promise<void>
+  login: (email: string, password: string) => Promise<boolean>
   logout: () => void
-  resetDemoData: () => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-const copySeedTournaments = (): Tournament[] =>
-  seedTournaments.map((tournament) => ({ ...tournament }))
-
-const copySeedRegistrations = (): Registration[] =>
-  seedRegistrations.map((registration) => ({
-    ...registration,
-    payment: {
-      ...registration.payment,
-      history: registration.payment.history.map((entry) => ({ ...entry })),
-    },
-  }))
-
-const readLegacyFavorites = (): string[] => {
-  try {
-    const raw = window.localStorage.getItem(LEGACY_FAVORITES_KEY)
-    if (!raw) return []
-    const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed)
-      ? parsed.filter((item): item is string => typeof item === 'string')
-      : []
-  } catch {
-    return []
-  }
-}
-
-const initialStore = (): DemoStore => {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed: unknown = JSON.parse(raw)
-      if (
-        parsed &&
-        typeof parsed === 'object' &&
-        'tournaments' in parsed &&
-        'registrations' in parsed &&
-        'favorites' in parsed
-      ) {
-        const store = parsed as DemoStore
-        if (Array.isArray(store.tournaments) && Array.isArray(store.registrations)) {
-          return {
-            version: 1,
-            tournaments: store.tournaments,
-            registrations: store.registrations,
-            favorites: Array.isArray(store.favorites) ? store.favorites : [],
-          }
-        }
-      }
-    }
-  } catch {
-    // Fall back to seed data if storage is malformed or unavailable.
-  }
-  return {
-    version: 1,
-    tournaments: copySeedTournaments(),
-    registrations: copySeedRegistrations(),
-    favorites: readLegacyFavorites(),
-  }
-}
-
-const readAdminSession = (): boolean => {
-  try {
-    return window.sessionStorage.getItem(ADMIN_SESSION_KEY) === 'active'
-  } catch {
-    return false
-  }
-}
+const initialStore = (): AppStore => ({ tournaments: [], registrations: [], favorites: [], merchandise: [], results: [], leaderboard: [] })
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [store, setStore] = useState<DemoStore>(initialStore)
+  const [store, setStore] = useState<AppStore>(initialStore)
   const storeRef = useRef(store)
-  const [isAdmin, setIsAdmin] = useState(readAdminSession)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [emsRole, setEmsRole] = useState<'admin' | 'staff' | null>(null)
+  const [authLoading, setAuthLoading] = useState(() => Boolean(window.sessionStorage.getItem(authTokenKey)))
 
-  const commit = useCallback((next: DemoStore) => {
+  const commit = useCallback((next: AppStore) => {
     storeRef.current = next
     setStore(next)
   }, [])
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
-    } catch {
-      // Demo data stays in memory when storage is unavailable.
+    let active = true
+    const load = async () => {
+      try {
+        const [remoteTournaments, remoteMerchandise, results, leaderboard] = await Promise.all([emsApi.tournaments.list(), emsApi.products.list(), emsApi.results.list(), emsApi.leaderboard.list()])
+        if (active) commit({ ...storeRef.current, tournaments: remoteTournaments, merchandise: remoteMerchandise, results, leaderboard })
+      } catch (error) { console.error('Unable to load EMS catalog:', error) }
     }
-  }, [store])
+    void load()
+    const token = window.sessionStorage.getItem(authTokenKey)
+    if (token) {
+      emsApi.auth.me().then(async ({ user }) => {
+        if (!active) return
+        setIsAdmin(true)
+        setEmsRole(user.role === 'admin' ? 'admin' : 'staff')
+        const [tournaments, registrations, merchandise, results, leaderboard] = await Promise.all([emsApi.tournaments.listAdmin(), emsApi.registrations.listAdmin(), emsApi.products.listAdmin(), emsApi.results.list(), emsApi.leaderboard.list()])
+        if (active) commit({ ...storeRef.current, tournaments, registrations, merchandise, results, leaderboard })
+      }).catch(() => {
+        window.sessionStorage.removeItem(authTokenKey)
+        setIsAdmin(false)
+        setEmsRole(null)
+      }).finally(() => { if (active) setAuthLoading(false) })
+    } else {
+      setAuthLoading(false)
+    }
+    return () => { active = false }
+  }, [commit])
 
   const toggleFavorite = useCallback(
     (id: string) => {
@@ -174,7 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const registerForTournament = useCallback(
-    (input: RegistrationInput): ActionResult => {
+    async (input: RegistrationInput): Promise<ActionResult> => {
       const current = storeRef.current
       const tournament = current.tournaments.find((item) => item.id === input.tournamentId)
       if (!tournament) return { ok: false, error: 'This event no longer exists.' }
@@ -190,316 +152,110 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (duplicate) {
         return { ok: false, error: 'This email is already registered for the event.' }
       }
-      const now = new Date().toISOString()
-      const registration: Registration = {
-        id: makeId('reg'),
-        reference: makeReference(),
-        tournamentId: tournament.id,
-        playerName: input.name.trim(),
-        email: input.email.trim(),
-        tag: input.tag.trim().toUpperCase(),
-        region: input.region,
-        entryFee: tournament.entryFee,
-        registrationStatus: 'pending',
-        payment: {
-          method: input.method,
-          reference: input.reference.trim(),
-          note: input.note?.trim() || undefined,
-          submittedAt: now,
-          status: 'pending',
-          history: [
-            {
-              at: now,
-              action: 'pending',
-              actor: 'Player',
-              note: 'Payment reference submitted through the demo checkout.',
-            },
-          ],
-        },
-        createdAt: now,
-      }
-      commit({
-        ...current,
-        registrations: [registration, ...current.registrations],
-        tournaments: current.tournaments.map((item) =>
-          item.id === tournament.id ? { ...item, entrants: item.entrants + 1 } : item,
-        ),
-      })
-      return { ok: true, registration }
-    },
-    [commit],
-  )
-
-  const addTournament = useCallback(
-    (tournament: Omit<Tournament, 'id' | 'createdAt'>): string => {
-      const current = storeRef.current
-      const id = makeId('evt')
-      commit({
-        ...current,
-        tournaments: [
-          {
-            ...tournament,
-            id,
-            createdAt: new Date().toISOString(),
-          },
-          ...current.tournaments,
-        ],
-      })
-      return id
-    },
-    [commit],
-  )
-
-  const updateTournament = useCallback(
-    (id: string, patch: Partial<Tournament>) => {
-      const current = storeRef.current
-      commit({
-        ...current,
-        tournaments: current.tournaments.map((tournament) =>
-          tournament.id === id ? { ...tournament, ...patch, id } : tournament,
-        ),
-      })
-    },
-    [commit],
-  )
-
-  const setTournamentStatus = useCallback(
-    (id: string, status: TournamentStatus): ActionResult => {
-      const current = storeRef.current
-      const tournament = current.tournaments.find((item) => item.id === id)
-      if (!tournament) return { ok: false, error: 'This event no longer exists.' }
-      if (!canTransition(tournament.status, status)) {
-        return { ok: false, error: 'That status change is not allowed.' }
-      }
-      commit({
-        ...current,
-        tournaments: current.tournaments.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                status,
-                published: status === 'draft' ? false : true,
-              }
-            : item,
-        ),
-      })
-      return { ok: true }
-    },
-    [commit],
-  )
-
-  const unpublishTournament = useCallback(
-    (id: string): ActionResult => {
-      const current = storeRef.current
-      const tournament = current.tournaments.find((item) => item.id === id)
-      if (!tournament || tournament.status === 'ended' || tournament.status === 'cancelled') {
-        return { ok: false, error: 'Unable to unpublish this event.' }
-      }
-      const registrations = current.registrations.filter(
-        (registration) =>
-          registration.tournamentId === id && registration.registrationStatus !== 'cancelled',
-      )
-      if (registrations.length > 0) {
-        return {
-          ok: false,
-          error: 'Cancel or remove active registrations before returning this event to draft.',
-        }
-      }
-      commit({
-        ...current,
-        tournaments: current.tournaments.map((item) =>
-          item.id === id ? { ...item, status: 'draft', published: false } : item,
-        ),
-      })
-      return { ok: true }
-    },
-    [commit],
-  )
-
-  const deleteTournament = useCallback(
-    (id: string): ActionResult => {
-      const current = storeRef.current
-      const hasRegistrations = current.registrations.some(
-        (registration) => registration.tournamentId === id,
-      )
-      if (hasRegistrations) {
-        return {
-          ok: false,
-          error: 'This event has registration history and cannot be deleted.',
-        }
-      }
-      commit({
-        ...current,
-        tournaments: current.tournaments.filter((tournament) => tournament.id !== id),
-        favorites: current.favorites.filter((favorite) => favorite !== id),
-      })
-      return { ok: true }
-    },
-    [commit],
-  )
-
-  const reviewPayment = useCallback(
-    (registrationId: string, status: PaymentStatus, note: string): ActionResult => {
-      const current = storeRef.current
-      const registration = current.registrations.find((item) => item.id === registrationId)
-      if (!registration) return { ok: false, error: 'Registration not found.' }
-      const tournament = current.tournaments.find(
-        (item) => item.id === registration.tournamentId,
-      )
-      if (!tournament) return { ok: false, error: 'This event no longer exists.' }
-      const allowed: Record<PaymentStatus, PaymentStatus[]> = {
-        pending: ['verified', 'rejected'],
-        verified: ['refunded'],
-        rejected: [],
-        refunded: [],
-      }
-      if (!allowed[registration.payment.status].includes(status)) {
-        return { ok: false, error: 'That payment action is not allowed.' }
-      }
-
-      const now = new Date().toISOString()
-      let registrationStatus = registration.registrationStatus
-      let entrants = tournament.entrants
-
-      if (status === 'verified') {
-        const eventEligible = tournament.status === 'upcoming' || tournament.status === 'live'
-        registrationStatus =
-          eventEligible && tournament.entrants <= tournament.capacity ? 'confirmed' : 'waitlisted'
-      }
-      if (status === 'refunded') {
-        if (registration.registrationStatus !== 'cancelled') {
-          entrants = Math.max(0, entrants - 1)
-        }
-        registrationStatus = 'cancelled'
-      }
-
-      const payload = note.trim()
-      commit({
-        ...current,
-        registrations: current.registrations.map((item) =>
-          item.id === registrationId
-            ? {
-                ...item,
-                registrationStatus,
-                confirmedAt: registrationStatus === 'confirmed' ? now : item.confirmedAt,
-                payment: {
-                  ...item.payment,
-                  status,
-                  reviewedAt: now,
-                  reviewedBy: 'Deckout Admin',
-                  reviewNote: payload || undefined,
-                  history: [
-                    ...item.payment.history,
-                    {
-                      at: now,
-                      action: status,
-                      note: payload || undefined,
-                      actor: 'Deckout Admin',
-                    },
-                  ],
-                },
-              }
-            : item,
-        ),
-        tournaments: current.tournaments.map((item) =>
-          item.id === tournament.id ? { ...item, entrants } : item,
-        ),
-      })
-      return { ok: true }
-    },
-    [commit],
-  )
-
-  const setRegistrationStatus = useCallback(
-    (registrationId: string, status: RegistrationStatus): ActionResult => {
-      const current = storeRef.current
-      const registration = current.registrations.find((item) => item.id === registrationId)
-      if (!registration) return { ok: false, error: 'Registration not found.' }
-      const tournament = current.tournaments.find(
-        (item) => item.id === registration.tournamentId,
-      )
-      if (!tournament) return { ok: false, error: 'This event no longer exists.' }
-      if (status === 'confirmed' && registration.payment.status !== 'verified') {
-        return { ok: false, error: 'Verify the payment before confirming this player.' }
-      }
-      if (
-        status === 'confirmed' &&
-        registration.registrationStatus !== 'confirmed' &&
-        tournament.entrants > tournament.capacity
-      ) {
-        return { ok: false, error: 'The field is full. Use the waitlist instead.' }
-      }
-      let entrants = tournament.entrants
-      if (status === 'cancelled' && registration.registrationStatus !== 'cancelled') {
-        entrants = Math.max(0, entrants - 1)
-      }
-      if (
-        registration.registrationStatus === 'cancelled' &&
-        status !== 'cancelled' &&
-        tournament.entrants < tournament.capacity
-      ) {
-        entrants += 1
-      }
-      const now = new Date().toISOString()
-      commit({
-        ...current,
-        registrations: current.registrations.map((item) =>
-          item.id === registrationId
-            ? {
-                ...item,
-                registrationStatus: status,
-                confirmedAt: status === 'confirmed' ? now : item.confirmedAt,
-              }
-            : item,
-        ),
-        tournaments: current.tournaments.map((item) =>
-          item.id === tournament.id ? { ...item, entrants } : item,
-        ),
-      })
-      return { ok: true }
-    },
-    [commit],
-  )
-
-  const login = useCallback((email: string, password: string): boolean => {
-    const valid =
-      email.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD
-    if (valid) {
-      setIsAdmin(true)
       try {
-        window.sessionStorage.setItem(ADMIN_SESSION_KEY, 'active')
-      } catch {
-        // Session remains in memory when session storage is unavailable.
+      const response = await emsApi.registrations.create(input)
+      const registration = response.registration
+      commit({ ...current, registrations: [registration, ...current.registrations] })
+      return { ok: true, registration }
+      } catch (error) {
+        return { ok: false, error: error instanceof Error ? error.message : 'Unable to save registration.' }
       }
+    },
+    [commit],
+  )
+
+  const reloadAdmin = useCallback(async () => {
+    const [tournaments, registrations, merchandise, results, leaderboard] = await Promise.all([
+      emsApi.tournaments.listAdmin(), emsApi.registrations.listAdmin(), emsApi.products.listAdmin(), emsApi.results.list(), emsApi.leaderboard.list(),
+    ])
+    commit({ ...storeRef.current, tournaments, registrations, merchandise, results, leaderboard })
+  }, [commit])
+
+  const addTournament = useCallback(async (tournament: Omit<Tournament, 'id' | 'createdAt'>): Promise<string> => {
+    const { tournament: created } = await emsApi.tournaments.create(tournament)
+    await reloadAdmin()
+    return created.id
+  }, [reloadAdmin])
+
+  const updateTournament = useCallback(async (id: string, patch: Partial<Tournament>) => {
+    await emsApi.tournaments.update(id, patch)
+    await reloadAdmin()
+  }, [reloadAdmin])
+
+  const setTournamentStatus = useCallback(async (id: string, status: TournamentStatus): Promise<ActionResult> => {
+    try { await emsApi.tournaments.setStatus(id, status); await reloadAdmin(); return { ok: true } }
+    catch (error) { return { ok: false, error: error instanceof Error ? error.message : 'Unable to update event.' } }
+  }, [reloadAdmin])
+
+  const unpublishTournament = useCallback(async (id: string): Promise<ActionResult> => setTournamentStatus(id, 'draft'), [setTournamentStatus])
+
+  const deleteTournament = useCallback(async (id: string): Promise<ActionResult> => {
+    try { await emsApi.tournaments.remove(id); await reloadAdmin(); return { ok: true } }
+    catch (error) { return { ok: false, error: error instanceof Error ? error.message : 'Unable to delete event.' } }
+  }, [reloadAdmin])
+
+  const reviewPayment = useCallback(async (registrationId: string, status: PaymentStatus, note: string): Promise<ActionResult> => {
+    try { await emsApi.registrations.reviewPayment(registrationId, status, note); await reloadAdmin(); return { ok: true } }
+    catch (error) { return { ok: false, error: error instanceof Error ? error.message : 'Unable to review payment.' } }
+  }, [reloadAdmin])
+
+  const setRegistrationStatus = useCallback(async (registrationId: string, status: RegistrationStatus): Promise<ActionResult> => {
+    try { await emsApi.registrations.setStatus(registrationId, status); await reloadAdmin(); return { ok: true } }
+    catch (error) { return { ok: false, error: error instanceof Error ? error.message : 'Unable to update registration.' } }
+  }, [reloadAdmin])
+
+  const addMerchandise = useCallback(async (item: Omit<Merchandise, 'id' | 'createdAt'>): Promise<string> => {
+    const { product } = await emsApi.products.create(item)
+    await reloadAdmin()
+    return product.id
+  }, [reloadAdmin])
+
+  const updateMerchandise = useCallback(async (id: string, patch: Partial<Merchandise>) => {
+    await emsApi.products.update(id, patch)
+    await reloadAdmin()
+  }, [reloadAdmin])
+
+  const archiveMerchandise = useCallback(async (id: string) => {
+    await emsApi.products.archive(id)
+    await reloadAdmin()
+  }, [reloadAdmin])
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    try {
+      const result = await emsApi.auth.login(email, password)
+      window.sessionStorage.setItem(authTokenKey, result.token)
+      setIsAdmin(true)
+      setEmsRole(result.user.role === 'admin' ? 'admin' : 'staff')
+      await reloadAdmin()
+      return true
+    } catch {
+      window.sessionStorage.removeItem(authTokenKey)
+      setIsAdmin(false)
+      setEmsRole(null)
+      return false
     }
-    return valid
-  }, [])
+  }, [reloadAdmin])
 
   const logout = useCallback(() => {
     setIsAdmin(false)
+    setEmsRole(null)
     try {
-      window.sessionStorage.removeItem(ADMIN_SESSION_KEY)
+      window.sessionStorage.removeItem(authTokenKey)
     } catch {
       // Nothing else to clear.
     }
-  }, [])
-
-  const resetDemoData = useCallback(() => {
-    storeRef.current = {
-      version: 1,
-      tournaments: copySeedTournaments(),
-      registrations: copySeedRegistrations(),
-      favorites: [],
-    }
-    setStore(storeRef.current)
   }, [])
 
   const value = useMemo<AppContextValue>(
     () => ({
       tournaments: store.tournaments,
       registrations: store.registrations,
+      merchandise: store.merchandise,
+      results: store.results,
+      leaderboard: store.leaderboard,
       favorites: store.favorites,
       isAdmin,
+      emsRole,
+      authLoading,
       isFavorite: (id: string) => store.favorites.includes(id),
       toggleFavorite,
       registerForTournament,
@@ -510,13 +266,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteTournament,
       reviewPayment,
       setRegistrationStatus,
+      addMerchandise,
+      updateMerchandise,
+      archiveMerchandise,
       login,
       logout,
-      resetDemoData,
     }),
     [
       store,
       isAdmin,
+      emsRole,
+      authLoading,
       toggleFavorite,
       registerForTournament,
       addTournament,
@@ -526,9 +286,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteTournament,
       reviewPayment,
       setRegistrationStatus,
+      addMerchandise,
+      updateMerchandise,
+      archiveMerchandise,
       login,
       logout,
-      resetDemoData,
     ],
   )
 

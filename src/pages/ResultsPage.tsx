@@ -1,17 +1,18 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ResultsGrid } from '../components/ResultsGrid'
-import { results } from '../data/results'
 import { games, gameBySlug } from '../data/games'
 import { EmptyState } from '../components/ui/EmptyState'
 import { formatNumber } from '../lib/format'
 import { usePageTitle } from '../hooks/usePageTitle'
 import type { GameSlug } from '../types'
+import { useApp } from '../context/AppContext'
 
 export function ResultsPage() {
   usePageTitle('Results')
   const [game, setGame] = useState<GameSlug | 'all'>('all')
   const [query, setQuery] = useState('')
+  const { results } = useApp()
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -58,14 +59,13 @@ export function ResultsPage() {
                 <span className="text-dim">& champions.</span>
               </h1>
               <p className="page-hero__lede">
-                Every completed event, final table and title winner in one place. Open any result for
-                the full mock standings. No official results are represented here.
+                Official published standings and champions from completed events.
               </p>
             </div>
             <div className="page-hero__seal" aria-hidden="true">
               <span>EVENTS</span>
               <strong>{formatNumber(results.length).padStart(2, '0')}</strong>
-              <span>SAMPLE RESULTS</span>
+              <span>RESULTS</span>
             </div>
           </div>
         </div>
@@ -118,8 +118,7 @@ export function ResultsPage() {
           )}
 
           <p className="page-note">
-            All champions, records and standings are fictional sample content created for this
-            frontend concept.
+            Results are published by event administrators.
           </p>
         </div>
       </section>

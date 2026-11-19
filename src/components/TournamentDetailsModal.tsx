@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Tournament } from '../types'
 import { gameBySlug } from '../data/games'
-import { resultByTournamentId } from '../data/results'
-import { leaderboardByGame } from '../data/leaderboard'
 import { formatCurrency, formatDate, formatDateTime, formatNumber, statusLabel } from '../lib/format'
 import { isRegistrationOpen, registrationStatusMessage } from '../lib/events'
 import { Modal } from './ui/Modal'
@@ -19,17 +17,12 @@ interface Props {
 
 export function TournamentDetailsModal({ tournament, onClose, onResults }: Props) {
   const game = gameBySlug(tournament.game)!
-  const result = resultByTournamentId(tournament.id)
   const [mode, setMode] = useState<'overview' | 'register'>('overview')
-  const { isFavorite, toggleFavorite } = useApp()
+  const { isFavorite, toggleFavorite, results } = useApp()
+  const result = results.find((entry) => entry.tournamentId === tournament.id)
   const saved = isFavorite(tournament.id)
 
-  const boardPlayers = leaderboardByGame(tournament.game).slice(0, 4)
-  const liveMatches = [
-    { a: boardPlayers[0], b: boardPlayers[1], score: '2–1', table: 'Table 1 · Round 5' },
-    { a: boardPlayers[2], b: boardPlayers[3], score: '1–1', table: 'Table 2 · Round 5' },
-    { a: boardPlayers[1], b: boardPlayers[2], score: '2–0', table: 'Table 3 · Round 4' },
-  ]
+
 
   return (
     <Modal
@@ -46,7 +39,6 @@ export function TournamentDetailsModal({ tournament, onClose, onResults }: Props
           <div className="details__status">
             <StatusBadge status={tournament.status} />
             <span>{tournament.format}</span>
-            <span className="details__sample">SAMPLE EVENT DATA</span>
           </div>
 
           <p className="details__description">{tournament.description}</p>
@@ -69,7 +61,7 @@ export function TournamentDetailsModal({ tournament, onClose, onResults }: Props
             <div>
               <dt>Prize pool</dt>
               <dd>
-                {formatCurrency(tournament.prize)} <em>sample</em>
+                {formatCurrency(tournament.prize)}
               </dd>
             </div>
             <div>
@@ -93,35 +85,6 @@ export function TournamentDetailsModal({ tournament, onClose, onResults }: Props
               </dd>
             </div>
           </dl>
-
-          {tournament.status === 'live' && (
-            <div className="live-board">
-              <div className="live-board__head">
-                <span className="live-board__title">
-                  <span className="live-board__dot" aria-hidden="true" />
-                  LIVE DEMO BOARD
-                </span>
-                <span>ROUND 5 OF 6</span>
-              </div>
-              {liveMatches.map((match) => (
-                <div className="live-board__row" key={match.table}>
-                  <span className="live-board__table">{match.table}</span>
-                  <span className="live-board__player">
-                    {match.a?.player ?? 'TBD'}
-                    <em>{match.a?.country}</em>
-                  </span>
-                  <strong>{match.score}</strong>
-                  <span className="live-board__player live-board__player--right">
-                    {match.b?.player ?? 'TBD'}
-                    <em>{match.b?.country}</em>
-                  </span>
-                </div>
-              ))}
-              <p className="live-board__note">
-                Simulated scores for demonstration. This is not a connected live feed.
-              </p>
-            </div>
-          )}
 
           {tournament.status === 'ended' && result && (
             <div className="details__result">
@@ -147,7 +110,7 @@ export function TournamentDetailsModal({ tournament, onClose, onResults }: Props
             <strong>{registrationStatusMessage(tournament)}</strong>
             <span>
               Decked Out Cafe is an independent frontend concept. This event, its prize pool and
-              participants are fictional sample data. The entry flow is a demo and takes no payment.
+              Event information is provided by the organizer. Submit payment references for staff review.
             </span>
           </div>
 

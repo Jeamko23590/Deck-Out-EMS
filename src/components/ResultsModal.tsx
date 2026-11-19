@@ -1,11 +1,12 @@
 import { flagEmoji, formatCurrency, formatDate } from '../lib/format'
 import { gameBySlug } from '../data/games'
-import { resultByTournamentId } from '../data/results'
+import { useApp } from '../context/AppContext'
 import { Modal } from './ui/Modal'
 import { StatusBadge } from './ui/StatusBadge'
 
 export function ResultsModal({ resultId, onClose }: { resultId: string; onClose: () => void }) {
-  const result = resultByTournamentId(resultId)
+  const { results } = useApp()
+  const result = results.find((entry) => entry.tournamentId === resultId || entry.id === resultId)
   if (!result) return null
   const game = gameBySlug(result.game)!
 
@@ -51,7 +52,6 @@ export function ResultsModal({ resultId, onClose }: { resultId: string; onClose:
           <div className="champion-banner__prize">
             <span>Prize awarded</span>
             <strong>{formatCurrency(result.prize)}</strong>
-            <em>SAMPLE FIGURE</em>
           </div>
         </div>
 
@@ -89,10 +89,9 @@ export function ResultsModal({ resultId, onClose }: { resultId: string; onClose:
         </div>
 
         <div className="details__note">
-          <strong>Demo results</strong>
+            <strong>Final standings</strong>
           <span>
-            These standings are fictional sample data created for this frontend concept. They do not
-            represent official tournament results.
+            These standings were published by the event organizer.
           </span>
         </div>
 

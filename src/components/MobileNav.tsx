@@ -9,6 +9,7 @@ const navItems = [
   { to: '/tournaments', label: 'Tournaments' },
   { to: '/rankings', label: 'Rankings' },
   { to: '/results', label: 'Results' },
+  { to: '/merchandise', label: 'Merch' },
 ]
 
 export function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -102,8 +103,8 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
         </Link>
 
         <div className="mobile-nav__foot">
-          <p className="eyebrow">DEMO CLUB</p>
-          <p>Events, rankings and registrations shown here are sample data for a frontend concept.</p>
+          <p className="eyebrow">DECKED OUT CAFE</p>
+          <p>Browse published events, rankings and registrations from Decked Out Cafe.</p>
           <Link to="/admin/login" onClick={onClose}>Staff access</Link>
           <div className="socials">
             <span>DISCORD</span>

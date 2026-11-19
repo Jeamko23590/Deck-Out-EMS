@@ -98,13 +98,13 @@ export function AdminPaymentsPage() {
     (registration) => registration.payment.status === 'rejected',
   ).length
 
-  const applyPaymentAction = (nextStatus: PaymentStatus) => {
+  const applyPaymentAction = async (nextStatus: PaymentStatus) => {
     if (!selected) return
     if ((nextStatus === 'rejected' || nextStatus === 'refunded') && note.trim().length < 4) {
       setActionError('Add a short review note before rejecting or refunding.')
       return
     }
-    const result = reviewPayment(selected.id, nextStatus, note)
+    const result = await reviewPayment(selected.id, nextStatus, note)
     if (!result.ok) {
       setActionError(result.error ?? 'Unable to update payment.')
       return
@@ -114,9 +114,9 @@ export function AdminPaymentsPage() {
     setNote('')
   }
 
-  const applySeatAction = (nextStatus: 'confirmed' | 'waitlisted' | 'cancelled') => {
+  const applySeatAction = async (nextStatus: 'confirmed' | 'waitlisted' | 'cancelled') => {
     if (!selected) return
-    const result = setRegistrationStatus(selected.id, nextStatus)
+    const result = await setRegistrationStatus(selected.id, nextStatus)
     if (!result.ok) {
       setActionError(result.error ?? 'Unable to update seat.')
       return
@@ -131,7 +131,7 @@ export function AdminPaymentsPage() {
         <div>
           <p className="eyebrow">Front desk ledger</p>
           <h1>Payments</h1>
-          <p>Match entry references, confirm seats and keep the demo ledger tidy.</p>
+          <p>Review submitted payment references and manage tournament seats.</p>
         </div>
         <span className="admin-page__head-stat">
           <em>Pending review</em>
@@ -148,7 +148,7 @@ export function AdminPaymentsPage() {
         <article className="admin-stat">
           <span className="admin-stat__label">Verified total</span>
           <strong>{formatCurrency(verifiedTotal)}</strong>
-          <span className="admin-stat__meta">Sample entry fees</span>
+          <span className="admin-stat__meta">Verified entry fees</span>
         </article>
         <article className="admin-stat">
           <span className="admin-stat__label">Rejected</span>
@@ -158,7 +158,7 @@ export function AdminPaymentsPage() {
         <article className="admin-stat">
           <span className="admin-stat__label">All records</span>
           <strong>{String(registrations.length).padStart(2, '0')}</strong>
-          <span className="admin-stat__meta">Local demo registrations</span>
+          <span className="admin-stat__meta">Registrations</span>
         </article>
       </section>
 

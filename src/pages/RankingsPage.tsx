@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { Leaderboard } from '../components/Leaderboard'
-import { topOverall } from '../data/leaderboard'
 import { gameBySlug } from '../data/games'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { useApp } from '../context/AppContext'
 
 export function RankingsPage() {
   usePageTitle('Rankings')
-  const podium = topOverall(3)
+  const { leaderboard } = useApp()
+  const podium = leaderboard.slice(0, 3)
 
   return (
     <>
@@ -30,13 +31,13 @@ export function RankingsPage() {
               </h1>
               <p className="page-hero__lede">
                 Circuit points across every game system. Filter by game, region or sort metric to see
-                who is setting the pace. All standings are fictional sample data.
+                who is setting the pace.
               </p>
             </div>
             <div className="page-hero__seal" aria-hidden="true">
               <span>SEASON</span>
               <strong>26</strong>
-              <span>DEMO STANDINGS</span>
+              <span>STANDINGS</span>
             </div>
           </div>
         </div>
@@ -78,7 +79,7 @@ export function RankingsPage() {
                 How points work
               </p>
               <p>
-                Sample circuit points are awarded for placements across the season. The leaderboard
+                Circuit points are awarded for placements across the season. The leaderboard
                 recalculates on the client whenever you change the game, region or sorting metric.
               </p>
             </div>

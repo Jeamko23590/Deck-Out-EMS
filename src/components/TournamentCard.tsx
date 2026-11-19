@@ -1,6 +1,5 @@
 ﻿import type { Tournament } from '../types'
 import { gameBySlug } from '../data/games'
-import { resultByTournamentId } from '../data/results'
 import { formatCurrency, formatDateTime, formatNumber } from '../lib/format'
 import { StatusBadge } from './ui/StatusBadge'
 import { tournamentAction } from '../lib/events'
@@ -14,8 +13,8 @@ interface TournamentCardProps {
 
 export function TournamentCard({ tournament, onOpen, onResults }: TournamentCardProps) {
   const game = gameBySlug(tournament.game)
-  const result = resultByTournamentId(tournament.id)
-  const { isFavorite, toggleFavorite } = useApp()
+  const { isFavorite, toggleFavorite, results } = useApp()
+  const result = results.find((entry) => entry.tournamentId === tournament.id)
   const saved = isFavorite(tournament.id)
 
   if (!game) return null
@@ -93,7 +92,7 @@ export function TournamentCard({ tournament, onOpen, onResults }: TournamentCard
       <div className="t-card__money">
         <div className="t-card__prize">
           <span>
-            Prize pool <em>SAMPLE</em>
+            Prize pool
           </span>
           <strong>{formatCurrency(tournament.prize)}</strong>
         </div>
