@@ -23,22 +23,24 @@ interface MerchandiseForm {
 }
 
 const blankForm = (): MerchandiseForm => ({ name: '', description: '', imageUrl: '', price: '', stock: '0', category: '', section: 'merch', game: '', setName: '', rarity: '', condition: 'Near Mint', cardNumber: '', tags: '', published: false })
-const fromItem = (item: Merchandise): MerchandiseForm => ({ name: item.name, description: item.description, imageUrl: item.imageUrl, price: String(item.price), stock: String(item.stock), category: item.category, section: item.section === 'singles' || item.section === 'cards' && !/(pack|booster|sealed|deck|box|starter|bundle)/i.test(item.category) ? 'cards' : 'merch', game: item.game ?? '', setName: item.setName ?? '', rarity: item.rarity ?? '', condition: item.condition ?? 'Near Mint', cardNumber: item.cardNumber ?? '', tags: item.tags.join(', '), published: item.published })
+const fromItem = (item: Merchandise): MerchandiseForm => ({ name: item.name, description: item.description, imageUrl: item.imageUrl, price: String(item.price), stock: String(item.stock), category: item.category, section: item.section === 'singles' ? 'cards' : 'merch', game: item.game ?? '', setName: item.setName ?? '', rarity: item.rarity ?? '', condition: item.condition ?? 'Near Mint', cardNumber: item.cardNumber ?? '', tags: item.tags.join(', '), published: item.published })
 
 export function AdminMerchandisePage() {
   usePageTitle('Admin merchandise')
-  const { merchandise, addMerchandise, updateMerchandise, archiveMerchandise } = useApp()
+  const { merchandise, singles, addMerchandise, updateMerchandise, archiveMerchandise, addSingle, updateSingle, archiveSingle } = useApp()
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingSection, setEditingSection] = useState<'merch' | 'singles' | null>(null)
   const [form, setForm] = useState<MerchandiseForm>(blankForm)
   const [error, setError] = useState('')
   const [imageMode, setImageMode] = useState<'url' | 'upload'>('url')
   const [isDraggingImage, setIsDraggingImage] = useState(false)
   const imageInput = useRef<HTMLInputElement>(null)
-  const categories = useMemo(() => [...new Set(merchandise.map((item) => item.category).filter(Boolean))], [merchandise])
-  const cardGames = useMemo(() => [...new Set(merchandise.filter((item) => item.section === 'singles' || item.section === 'cards' && !/(pack|booster|sealed|deck|box|starter|bundle)/i.test(item.category)).map((item) => item.game).filter((game): game is string => Boolean(game)))], [merchandise])
+  const listings = useMemo(() => [...merchandise, ...singles], [merchandise, singles])
+  const categories = useMemo(() => [...new Set(listings.map((item) => item.category).filter(Boolean))], [listings])
+  const cardGames = useMemo(() => [...new Set(singles.map((item) => item.game).filter((game): game is string => Boolean(game)))], [singles])
 
-  const startEdit = (item: Merchandise) => { setEditingId(item.id); setForm(fromItem(item)); setImageMode(item.imageUrl.startsWith('data:image/') ? 'upload' : 'url'); setError('') }
-  const cancelEdit = () => { setEditingId(null); setForm(blankForm()); setImageMode('url'); setError('') }
+  const startEdit = (item: Merchandise) => { setEditingId(item.id); setEditingSection(item.section === 'singles' ? 'singles' : 'merch'); setForm(fromItem(item)); setImageMode(item.imageUrl.startsWith('data:image/') ? 'upload' : 'url'); setError('') }
+  const cancelEdit = () => { setEditingId(null); setEditingSection(null); setForm(blankForm()); setImageMode('url'); setError('') }
   const useImageFile = (file?: File) => {
     if (!file) return
     if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) return setError('Choose a JPG, PNG, WebP, or GIF image.')
@@ -70,7 +72,9 @@ export function AdminMerchandisePage() {
     if (form.section === 'cards' && !form.game.trim()) return setError('Choose or enter the card game for this single.')
     const payload = { name: form.name.trim(), description: form.description.trim(), imageUrl: form.imageUrl.trim(), price, stock, category: form.category.trim() || (form.section === 'cards' ? 'Single' : 'General'), section: form.section === 'cards' ? 'singles' as const : 'merch' as const, game: form.section === 'cards' ? form.game.trim() : undefined, setName: form.section === 'cards' ? form.setName.trim() : undefined, rarity: form.section === 'cards' ? form.rarity.trim() : undefined, condition: form.section === 'cards' ? form.condition.trim() : undefined, cardNumber: form.section === 'cards' ? form.cardNumber.trim() : undefined, tags: [...new Set(form.tags.split(',').map((tag) => tag.trim()).filter(Boolean))], published: form.published }
     try {
-      if (editingId) await updateMerchandise(editingId, payload)
+      if (editingId && editingSection === 'singles') await updateSingle(editingId, payload)
+      else if (editingId) await updateMerchandise(editingId, payload)
+      else if (form.section === 'cards') await addSingle(payload)
       else await addMerchandise(payload)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unable to save listing.')
@@ -87,10 +91,10 @@ export function AdminMerchandisePage() {
 
     <div className="merch-admin-layout">
       <form className="admin-panel merch-admin-form" onSubmit={submit}>
-        <div className="admin-panel__head"><div><p className="eyebrow">{editingId ? 'Edit listing' : 'New listing'}</p><h2>{editingId ? 'Product details' : 'Add merchandise'}</h2></div></div>
+        <div className="admin-panel__head"><div><p className="eyebrow">{editingId ? 'Edit listing' : 'New listing'}</p><h2>{editingId ? form.section === 'cards' ? 'Single details' : 'Product details' : form.section === 'cards' ? 'Add single' : 'Add merchandise'}</h2></div></div>
         <label className="field"><span className="field__label">Product name</span><input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Decked Out Club Tee" /></label>
         <label className="field"><span className="field__label">Description</span><textarea rows={4} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="What makes this item worth picking up?" /></label>
-        <label className="field"><span className="field__label">Shop section</span><select value={form.section} onChange={(event) => setForm({ ...form, section: event.target.value as 'merch' | 'cards', game: '' })}><option value="merch">Merchandise (including sealed packs)</option><option value="cards">Singles</option></select></label>
+        <label className="field"><span className="field__label">Shop section</span><select value={form.section} disabled={Boolean(editingId)} onChange={(event) => setForm({ ...form, section: event.target.value as 'merch' | 'cards', game: '' })}><option value="merch">Merchandise (including sealed packs)</option><option value="cards">Singles</option></select></label>
         {form.section === 'cards' && <>
           <label className="field"><span className="field__label">Card game</span><input list="merch-card-games" value={form.game} onChange={(event) => setForm({ ...form, game: event.target.value })} placeholder="Riftbound, Pokémon, Magic…" /><datalist id="merch-card-games">{cardGames.map((game) => <option key={game} value={game} />)}</datalist><span className="field__hint">Choose an existing game or type a new one to add it to Singles.</span></label>
           <div className="field-row"><label className="field"><span className="field__label">Set / expansion</span><input value={form.setName} onChange={(event) => setForm({ ...form, setName: event.target.value })} placeholder="Set name" /></label><label className="field"><span className="field__label">Card number</span><input value={form.cardNumber} onChange={(event) => setForm({ ...form, cardNumber: event.target.value })} placeholder="Optional" /></label></div>
@@ -108,7 +112,7 @@ export function AdminMerchandisePage() {
               <strong>Drop an image here or browse files</strong><span>JPG, PNG, WebP, or GIF · up to 4 MB</span>
             </div>
           </>}
-          <span className="field__hint">Uploaded images are saved with the shared product so they appear in both EMS and POS. Leave blank to use the shop placeholder.</span>
+          <span className="field__hint">Uploaded images stay in the {form.section === 'cards' ? 'EMS singles catalog' : 'shared product record for EMS and POS'}. Leave blank to use the shop placeholder.</span>
         </div>
         {form.imageUrl && <><img className="merch-admin-preview" src={form.imageUrl} alt="Product preview" /><button className="text-btn" type="button" onClick={() => setForm({ ...form, imageUrl: '' })}>Remove image</button></>}
         <div className="field-row">
@@ -123,11 +127,11 @@ export function AdminMerchandisePage() {
       </form>
 
       <section className="admin-panel merch-admin-list">
-        <div className="admin-panel__head"><div><p className="eyebrow">Catalog</p><h2>{merchandise.length} listings</h2></div></div>
-        {merchandise.length ? <div className="merch-admin-items">{merchandise.map((item) => <article key={item.id} className="merch-admin-item">
+        <div className="admin-panel__head"><div><p className="eyebrow">EMS catalog</p><h2>{listings.length} listings</h2></div></div>
+        {listings.length ? <div className="merch-admin-items">{listings.map((item) => <article key={`${item.section}-${item.id}`} className="merch-admin-item">
           {item.imageUrl ? <img src={item.imageUrl} alt="" loading="lazy" /> : <div className="merch-admin-item__placeholder">DO</div>}
-          <div className="merch-admin-item__details"><strong>{item.name}</strong><span>{item.section === 'singles' || item.section === 'cards' && !/(pack|booster|sealed|deck|box|starter|bundle)/i.test(item.category) ? `Single · ${item.game} · ${item.setName ?? ''} · ` : 'Merchandise · '}{item.category} · {item.stock} in stock · {formatCurrency(item.price)}</span><div className="merch-tags">{item.tags.map((tag) => <small key={tag}>{tag}</small>)}</div></div>
-          <div className="merch-admin-item__actions"><span className={`status ${item.published ? 'status--upcoming' : 'status--draft'}`}>{item.published ? 'Published' : 'Draft'}</span><button className="text-btn" type="button" onClick={() => startEdit(item)}>Edit</button><button className="text-btn" type="button" onClick={() => void updateMerchandise(item.id, { published: !item.published }).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Unable to update product.'))}>{item.published ? 'Unpublish' : 'Publish'}</button><button className="text-btn" type="button" onClick={() => { if (window.confirm(`Archive ${item.name} from the shared POS and EMS catalogs?`)) void archiveMerchandise(item.id).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Unable to archive product.')) }}>Archive</button></div>
+          <div className="merch-admin-item__details"><strong>{item.name}</strong><span>{item.section === 'singles' ? `Single · ${item.game} · ${item.setName ?? ''} · ` : 'Merchandise · '}{item.category} · {item.stock} in stock · {formatCurrency(item.price)}</span><div className="merch-tags">{item.tags.map((tag) => <small key={tag}>{tag}</small>)}</div></div>
+          <div className="merch-admin-item__actions"><span className={`status ${item.published ? 'status--upcoming' : 'status--draft'}`}>{item.published ? 'Published' : 'Draft'}</span><button className="text-btn" type="button" onClick={() => startEdit(item)}>Edit</button><button className="text-btn" type="button" onClick={() => void (item.section === 'singles' ? updateSingle(item.id, { published: !item.published }) : updateMerchandise(item.id, { published: !item.published })).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Unable to update listing.'))}>{item.published ? 'Unpublish' : 'Publish'}</button><button className="text-btn" type="button" onClick={() => { if (window.confirm(`Archive ${item.name} from the EMS ${item.section === 'singles' ? 'singles' : 'merchandise'} catalog${item.section === 'singles' ? '' : ' and shared POS catalog'}?`)) void (item.section === 'singles' ? archiveSingle(item.id) : archiveMerchandise(item.id)).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Unable to archive listing.')) }}>Archive</button></div>
         </article>)}</div> : <div className="admin-empty"><strong>No merchandise yet.</strong><span>Add a listing using the form.</span></div>}
       </section>
     </div>

@@ -5,13 +5,14 @@ import { formatCurrency } from '../lib/format'
 
 export function MerchandisePage() {
   usePageTitle('Merchandise')
-  const { merchandise } = useApp()
+  const { merchandise, singles } = useApp()
   const [section, setSection] = useState<'merch' | 'singles'>('merch')
   const [category, setCategory] = useState('All items')
   const [query, setQuery] = useState('')
-  const published = merchandise.filter((item) => item.published)
-  const isSingle = (item: (typeof published)[number]) => item.section === 'singles' || item.section === 'cards' && !/(pack|booster|sealed|deck|box|starter|bundle)/i.test(item.category)
-  const sectionItems = published.filter((item) => section === 'singles' ? isSingle(item) : !isSingle(item))
+  const publishedMerchandise = merchandise.filter((item) => item.published)
+  const publishedSingles = singles.filter((item) => item.published)
+  const published = section === 'singles' ? publishedSingles : publishedMerchandise
+  const sectionItems = published
   const categories = ['All items', ...new Set(sectionItems.map((item) => section === 'singles' ? item.game : item.category).filter((value): value is string => Boolean(value)))]
   const items = useMemo(() => sectionItems.filter((item) => {
     const itemFilter = section === 'singles' ? item.game : item.category
@@ -35,8 +36,8 @@ export function MerchandisePage() {
 
       <div className="merch-section-switcher">
         <div className="container merch-section-switcher__inner" role="tablist" aria-label="Shop sections">
-          <button type="button" role="tab" aria-selected={section === 'merch'} className={section === 'merch' ? 'is-active' : ''} onClick={() => { setSection('merch'); setCategory('All items') }}>Merchandise <span>{published.filter((item) => !isSingle(item)).length}</span></button>
-          <button type="button" role="tab" aria-selected={section === 'singles'} className={section === 'singles' ? 'is-active' : ''} onClick={() => { setSection('singles'); setCategory('All items') }}>Singles <span>{published.filter(isSingle).length}</span></button>
+          <button type="button" role="tab" aria-selected={section === 'merch'} className={section === 'merch' ? 'is-active' : ''} onClick={() => { setSection('merch'); setCategory('All items') }}>Merchandise <span>{publishedMerchandise.length}</span></button>
+          <button type="button" role="tab" aria-selected={section === 'singles'} className={section === 'singles' ? 'is-active' : ''} onClick={() => { setSection('singles'); setCategory('All items') }}>Singles <span>{publishedSingles.length}</span></button>
         </div>
       </div>
 

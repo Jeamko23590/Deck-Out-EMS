@@ -72,7 +72,7 @@ export function AdminReportsPage() {
       <article className="admin-stat"><span className="admin-stat__label">Live events</span><strong>{stats?.events.live_events ?? '—'}</strong><span className="admin-stat__meta">{stats?.events.upcoming_events ?? '—'} upcoming</span></article>
       <article className="admin-stat"><span className="admin-stat__label">Registrations</span><strong>{stats?.registrations.total ?? '—'}</strong><span className="admin-stat__meta">{stats?.registrations.confirmed ?? 0} confirmed</span></article>
       <article className="admin-stat"><span className="admin-stat__label">Verified entry revenue</span><strong>{stats ? formatCurrency(stats.verifiedRevenue) : '—'}</strong><span className="admin-stat__meta">Verified registrations</span></article>
-      <article className="admin-stat"><span className="admin-stat__label">Catalog listings</span><strong>{stats?.products ?? '—'}</strong><span className="admin-stat__meta">Merchandise and singles</span></article>
+      <article className="admin-stat"><span className="admin-stat__label">Merchandise products</span><strong>{stats?.products ?? '—'}</strong><span className="admin-stat__meta">Plus {stats?.singles ?? '—'} separate card singles</span></article>
     </section>
     <div className="admin-grid admin-report-grid">
       <section className="admin-panel">

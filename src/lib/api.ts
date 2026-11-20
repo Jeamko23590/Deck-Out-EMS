@@ -25,6 +25,7 @@ export interface AdminReportStats {
   registrations: { total: number; confirmed: number; pending_payments: number }
   verifiedRevenue: number
   products: number
+  singles: number
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -91,6 +92,13 @@ export const emsApi = {
     create: (value: Omit<Merchandise, 'id' | 'createdAt'>) => request<{ product: Merchandise }>('/products', json('POST', value)),
     update: (id: string, value: Partial<Merchandise>) => request<{ product: Merchandise }>(`/products/${encodeURIComponent(id)}`, json('PUT', value)),
     archive: (id: string) => request<unknown>(`/products/${encodeURIComponent(id)}`, json('DELETE')),
+  },
+  singles: {
+    list: async () => (await request<{ singles: Merchandise[] }>('/singles')).singles,
+    listAdmin: async () => (await request<{ singles: Merchandise[] }>('/singles/admin')).singles,
+    create: (value: Omit<Merchandise, 'id' | 'createdAt'>) => request<{ single: Merchandise }>('/singles', json('POST', value)),
+    update: (id: string, value: Partial<Merchandise>) => request<{ single: Merchandise }>(`/singles/${encodeURIComponent(id)}`, json('PUT', value)),
+    archive: (id: string) => request<unknown>(`/singles/${encodeURIComponent(id)}`, json('DELETE')),
   },
   categories: {
     list: async () => (await request<{ categories: string[] }>('/categories')).categories,

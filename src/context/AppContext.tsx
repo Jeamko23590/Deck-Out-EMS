@@ -27,6 +27,7 @@ interface AppStore {
   registrations: Registration[]
   favorites: string[]
   merchandise: Merchandise[]
+  singles: Merchandise[]
   results: TournamentResult[]
   leaderboard: LeaderboardEntry[]
 }
@@ -52,6 +53,7 @@ interface AppContextValue {
   tournaments: Tournament[]
   registrations: Registration[]
   merchandise: Merchandise[]
+  singles: Merchandise[]
   results: TournamentResult[]
   leaderboard: LeaderboardEntry[]
   favorites: string[]
@@ -74,13 +76,16 @@ interface AppContextValue {
   addMerchandise: (item: Omit<Merchandise, 'id' | 'createdAt'>) => Promise<string>
   updateMerchandise: (id: string, patch: Partial<Merchandise>) => Promise<void>
   archiveMerchandise: (id: string) => Promise<void>
+  addSingle: (item: Omit<Merchandise, 'id' | 'createdAt'>) => Promise<string>
+  updateSingle: (id: string, patch: Partial<Merchandise>) => Promise<void>
+  archiveSingle: (id: string) => Promise<void>
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-const initialStore = (): AppStore => ({ tournaments: [], registrations: [], favorites: [], merchandise: [], results: [], leaderboard: [] })
+const initialStore = (): AppStore => ({ tournaments: [], registrations: [], favorites: [], merchandise: [], singles: [], results: [], leaderboard: [] })
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<AppStore>(initialStore)
@@ -98,8 +103,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let active = true
     const load = async () => {
       try {
-        const [remoteTournaments, remoteMerchandise, results, leaderboard] = await Promise.all([emsApi.tournaments.list(), emsApi.products.list(), emsApi.results.list(), emsApi.leaderboard.list()])
-        if (active) commit({ ...storeRef.current, tournaments: remoteTournaments, merchandise: remoteMerchandise, results, leaderboard })
+        const [remoteTournaments, remoteMerchandise, remoteSingles, results, leaderboard] = await Promise.all([emsApi.tournaments.list(), emsApi.products.list(), emsApi.singles.list(), emsApi.results.list(), emsApi.leaderboard.list()])
+        if (active) commit({ ...storeRef.current, tournaments: remoteTournaments, merchandise: remoteMerchandise, singles: remoteSingles, results, leaderboard })
       } catch (error) { console.error('Unable to load EMS catalog:', error) }
     }
     void load()
@@ -109,8 +114,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!active) return
         setIsAdmin(true)
         setEmsRole(user.role === 'admin' ? 'admin' : 'staff')
-        const [tournaments, registrations, merchandise, results, leaderboard] = await Promise.all([emsApi.tournaments.listAdmin(), emsApi.registrations.listAdmin(), emsApi.products.listAdmin(), emsApi.results.list(), emsApi.leaderboard.list()])
-        if (active) commit({ ...storeRef.current, tournaments, registrations, merchandise, results, leaderboard })
+        const [tournaments, registrations, merchandise, singles, results, leaderboard] = await Promise.all([emsApi.tournaments.listAdmin(), emsApi.registrations.listAdmin(), emsApi.products.listAdmin(), emsApi.singles.listAdmin(), emsApi.results.list(), emsApi.leaderboard.list()])
+        if (active) commit({ ...storeRef.current, tournaments, registrations, merchandise, singles, results, leaderboard })
       }).catch(() => {
         window.sessionStorage.removeItem(authTokenKey)
         setIsAdmin(false)
@@ -165,10 +170,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const reloadAdmin = useCallback(async () => {
-    const [tournaments, registrations, merchandise, results, leaderboard] = await Promise.all([
-      emsApi.tournaments.listAdmin(), emsApi.registrations.listAdmin(), emsApi.products.listAdmin(), emsApi.results.list(), emsApi.leaderboard.list(),
+    const [tournaments, registrations, merchandise, singles, results, leaderboard] = await Promise.all([
+      emsApi.tournaments.listAdmin(), emsApi.registrations.listAdmin(), emsApi.products.listAdmin(), emsApi.singles.listAdmin(), emsApi.results.list(), emsApi.leaderboard.list(),
     ])
-    commit({ ...storeRef.current, tournaments, registrations, merchandise, results, leaderboard })
+    commit({ ...storeRef.current, tournaments, registrations, merchandise, singles, results, leaderboard })
   }, [commit])
 
   const addTournament = useCallback(async (tournament: Omit<Tournament, 'id' | 'createdAt'>): Promise<string> => {
@@ -219,6 +224,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await emsApi.products.archive(id)
     await reloadAdmin()
   }, [reloadAdmin])
+
+  const addSingle = useCallback(async (item: Omit<Merchandise, 'id' | 'createdAt'>): Promise<string> => {
+    const { single } = await emsApi.singles.create(item)
+    await reloadAdmin()
+    return single.id
+  }, [reloadAdmin])
+
+  const updateSingle = useCallback(async (id: string, patch: Partial<Merchandise>) => {
+    await emsApi.singles.update(id, patch)
+    await reloadAdmin()
+  }, [reloadAdmin])
+
+  const archiveSingle = useCallback(async (id: string) => {
+    await emsApi.singles.archive(id)
+    await reloadAdmin()
+  }, [reloadAdmin])
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
       const result = await emsApi.auth.login(email, password)
@@ -250,6 +271,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       tournaments: store.tournaments,
       registrations: store.registrations,
       merchandise: store.merchandise,
+      singles: store.singles,
       results: store.results,
       leaderboard: store.leaderboard,
       favorites: store.favorites,
@@ -269,6 +291,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addMerchandise,
       updateMerchandise,
       archiveMerchandise,
+      addSingle,
+      updateSingle,
+      archiveSingle,
       login,
       logout,
     }),
@@ -289,6 +314,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addMerchandise,
       updateMerchandise,
       archiveMerchandise,
+      addSingle,
+      updateSingle,
+      archiveSingle,
       login,
       logout,
     ],
