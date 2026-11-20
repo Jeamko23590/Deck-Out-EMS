@@ -15,6 +15,7 @@ const sortLabels: Record<LeaderboardSort, string> = {
   points: 'Circuit points',
   wins: 'Total wins',
   firsts: 'First-place finishes',
+  elo: 'Elo rating',
 }
 
 export function Leaderboard({
@@ -37,8 +38,8 @@ export function Leaderboard({
       (entry) =>
         (game === 'all' || entry.game === game) && (region === 'all' || entry.region === region),
     )
-    return [...filtered].sort((a, b) => b[sort] - a[sort])
-  }, [game, region, sort])
+    return [...filtered].sort((a, b) => (b[sort] ?? 1000) - (a[sort] ?? 1000) || a.player.localeCompare(b.player))
+  }, [leaderboard, game, region, sort])
 
   const isFiltered = game !== 'all' || region !== 'all' || sort !== 'points'
 
@@ -138,6 +139,7 @@ export function Leaderboard({
                   <span>
                     {entry.team} <em>· {entryGame.shortName}</em>
                   </span>
+                  <span>Elo {entry.elo ?? 1000} · {(entry.ratedMatches ?? 0) > 0 ? `last match ${(entry.eloChange ?? 0) >= 0 ? '+' : ''}${entry.eloChange ?? 0}` : 'Unrated'}</span>
                 </span>
                 <span className="lb__game" role="cell">
                   <span className={`lb__swatch game--${entry.game}`} aria-hidden="true" />

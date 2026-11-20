@@ -3,6 +3,7 @@ import { gameBySlug } from '../data/games'
 import { useApp } from '../context/AppContext'
 import { Modal } from './ui/Modal'
 import { StatusBadge } from './ui/StatusBadge'
+import { EloHistory } from './EloHistory'
 
 export function ResultsModal({ resultId, onClose }: { resultId: string; onClose: () => void }) {
   const { results } = useApp()
@@ -87,6 +88,8 @@ export function ResultsModal({ resultId, onClose }: { resultId: string; onClose:
             </div>
           ))}
         </div>
+
+        <EloHistory resultId={result.id} />
 
         <div className="details__note">
             <strong>Final standings</strong>

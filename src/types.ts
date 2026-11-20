@@ -83,6 +83,28 @@ export interface Standing {
   country: string
   record: string
   points: number
+  matches?: { opponent: string; score: 0 | 0.5 | 1; order: number }[]
+}
+
+export interface ApprovedPlayer {
+  id: string
+  playerName: string
+  tag: string
+}
+
+export interface EloHistoryEntry {
+  resultId: string
+  tournamentId: string
+  event: string
+  date: string
+  game: GameSlug
+  order: number
+  player: string
+  opponent: string
+  score: 0 | 0.5 | 1
+  before: number
+  change: number
+  after: number
 }
 
 export interface TournamentResult {
@@ -105,6 +127,9 @@ export interface TournamentResult {
 export interface LeaderboardEntry {
   id: string
   rank: number
+  elo?: number
+  eloChange?: number
+  ratedMatches?: number
   player: string
   team: string
   game: GameSlug
@@ -117,7 +142,7 @@ export interface LeaderboardEntry {
   country: string
 }
 
-export type LeaderboardSort = 'points' | 'wins' | 'firsts'
+export type LeaderboardSort = 'points' | 'wins' | 'firsts' | 'elo'
 
 export interface PaymentReviewEvent {
   at: string

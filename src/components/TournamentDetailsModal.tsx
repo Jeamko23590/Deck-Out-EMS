@@ -8,6 +8,7 @@ import { Modal } from './ui/Modal'
 import { StatusBadge } from './ui/StatusBadge'
 import { RegistrationForm } from './RegistrationForm'
 import { useApp } from '../context/AppContext'
+import { ApprovedPlayers } from './ApprovedPlayers'
 
 interface Props {
   tournament: Tournament
@@ -85,6 +86,8 @@ export function TournamentDetailsModal({ tournament, onClose, onResults }: Props
               </dd>
             </div>
           </dl>
+
+          <ApprovedPlayers tournamentId={tournament.id} />
 
           {tournament.status === 'ended' && result && (
             <div className="details__result">

@@ -31,7 +31,7 @@ export function ResultsPage() {
           .includes(needle)
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [game, query])
+  }, [results, game, query])
 
   const reset = () => {
     setGame('all')

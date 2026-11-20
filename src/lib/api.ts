@@ -1,4 +1,4 @@
-import type { LeaderboardEntry, Merchandise, PaymentStatus, Registration, Tournament, TournamentResult } from '../types'
+import type { ApprovedPlayer, EloHistoryEntry, LeaderboardEntry, Merchandise, PaymentStatus, Registration, Tournament, TournamentResult } from '../types'
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '')
 const TOKEN_KEY = 'deckout-ems-token-v1'
@@ -61,6 +61,7 @@ export const emsApi = {
     changePassword: (currentPassword: string, newPassword: string) => request<unknown>('/auth/password', json('PUT', { currentPassword, newPassword })),
   },
   tournaments: {
+    approvedPlayers: async (id: string) => (await request<{ players: ApprovedPlayer[] }>(`/tournaments/${encodeURIComponent(id)}/players`)).players,
     list: async () => (await request<{ tournaments: Tournament[] }>('/tournaments')).tournaments,
     listAdmin: async () => (await request<{ tournaments: Tournament[] }>('/tournaments/admin/all')).tournaments,
     create: (value: Omit<Tournament, 'id' | 'createdAt'>) => request<{ tournament: Tournament }>('/tournaments', json('POST', value)),
@@ -81,6 +82,7 @@ export const emsApi = {
     remove: (id: string) => request<unknown>(`/results/${encodeURIComponent(id)}`, json('DELETE')),
   },
   leaderboard: {
+    history: async (resultId: string) => (await request<{ history: EloHistoryEntry[] }>(`/leaderboard/history?resultId=${encodeURIComponent(resultId)}`)).history,
     list: async () => (await request<{ leaderboard: LeaderboardEntry[] }>('/leaderboard')).leaderboard,
     create: (value: Omit<LeaderboardEntry, 'id' | 'rank'>) => request<{ entry: LeaderboardEntry }>('/leaderboard', json('POST', value)),
     update: (id: string, value: Partial<LeaderboardEntry>) => request<{ entry: LeaderboardEntry }>(`/leaderboard/${encodeURIComponent(id)}`, json('PUT', value)),

@@ -79,6 +79,7 @@ interface AppContextValue {
   addSingle: (item: Omit<Merchandise, 'id' | 'createdAt'>) => Promise<string>
   updateSingle: (id: string, patch: Partial<Merchandise>) => Promise<void>
   archiveSingle: (id: string) => Promise<void>
+  saveResult: (value: Omit<TournamentResult, 'id'>, id?: string) => Promise<void>
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
 }
@@ -176,6 +177,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     commit({ ...storeRef.current, tournaments, registrations, merchandise, singles, results, leaderboard })
   }, [commit])
 
+  const saveResult = useCallback(async (value: Omit<TournamentResult, 'id'>, id?: string) => {
+    if (id) await emsApi.results.update(id, value)
+    else await emsApi.results.create(value)
+    await reloadAdmin()
+  }, [reloadAdmin])
+
   const addTournament = useCallback(async (tournament: Omit<Tournament, 'id' | 'createdAt'>): Promise<string> => {
     const { tournament: created } = await emsApi.tournaments.create(tournament)
     await reloadAdmin()
@@ -244,9 +251,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const result = await emsApi.auth.login(email, password)
       window.sessionStorage.setItem(authTokenKey, result.token)
+      await reloadAdmin()
       setIsAdmin(true)
       setEmsRole(result.user.role === 'admin' ? 'admin' : 'staff')
-      await reloadAdmin()
       return true
     } catch {
       window.sessionStorage.removeItem(authTokenKey)
@@ -294,6 +301,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addSingle,
       updateSingle,
       archiveSingle,
+      saveResult,
       login,
       logout,
     }),
@@ -317,6 +325,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addSingle,
       updateSingle,
       archiveSingle,
+      saveResult,
       login,
       logout,
     ],

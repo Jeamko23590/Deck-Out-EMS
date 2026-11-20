@@ -17,6 +17,7 @@ import {
   transitionLabel,
 } from '../../lib/events'
 import type { TournamentStatus } from '../../types'
+import { AdminEventResults } from '../../components/AdminEventResults'
 
 export function AdminEventDetailPage() {
   const { id } = useParams()
@@ -24,6 +25,7 @@ export function AdminEventDetailPage() {
   const {
     tournaments,
     registrations,
+    results,
     setTournamentStatus,
     unpublishTournament,
     deleteTournament,
@@ -176,6 +178,8 @@ export function AdminEventDetailPage() {
           <span className="admin-stat__meta">Entry fees for verified registrations</span>
         </article>
       </section>
+
+      <AdminEventResults key={event.id} event={event} registrations={eventRegistrations} existing={results.find((result) => result.tournamentId === event.id)} />
 
       <div className="admin-grid">
         <section className="admin-panel admin-panel--wide">

@@ -10,6 +10,7 @@ import './styles/global.css'
 import './styles/categories.css'
 import './styles/admin.css'
 import './styles/redesign.css'
+import './styles/event-results.css'
 import App from './App'
 
 createRoot(document.getElementById('root')!).render(

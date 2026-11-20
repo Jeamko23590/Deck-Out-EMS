@@ -79,8 +79,9 @@ export function RankingsPage() {
                 How points work
               </p>
               <p>
-                Circuit points are awarded for placements across the season. The leaderboard
-                recalculates on the client whenever you change the game, region or sorting metric.
+                Circuit points come from published event standings. Wins come from recorded matches,
+                or historical win records when matches are unavailable. Elo starts at 1000 and
+                changes after each recorded opponent match using K=32. Filter by game to compare players in the same circuit.
               </p>
             </div>
             <Link to="/tournaments?status=upcoming" className="btn btn--ghost">

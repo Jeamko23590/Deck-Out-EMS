@@ -273,7 +273,8 @@ export function RegistrationForm({
         />
         <span>
           I confirm the payment reference is accurate and understand my entry will wait in the Admin
-          review queue until staff verifies it.
+          review queue until staff verifies it. Once approved, my player name and tag will appear
+          in the event’s public player list.
         </span>
       </label>
       {errors.consent && <span className="field__error">{errors.consent}</span>}
