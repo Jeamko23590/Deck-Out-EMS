@@ -4695,3 +4695,27 @@ ul {
     gap: 10px;
   }
 }
+.event-prizes-editor summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 1rem 0;
+}
+
+.event-prizes-editor__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.event-prizes-editor__row .field {
+  margin: 0;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .event-prizes-editor__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

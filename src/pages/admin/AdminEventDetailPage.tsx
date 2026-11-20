@@ -368,6 +368,12 @@ export function AdminEventDetailPage() {
                 <dt>Prize pool</dt>
                 <dd>{formatCurrency(event.prize)}</dd>
               </div>
+              {event.prizes?.map((prize, index) => (
+                <div key={`prize-${index}`}>
+                  <dt>{prize.label}</dt>
+                  <dd>{formatCurrency(prize.amount)}</dd>
+                </div>
+              ))}
               <div>
                 <dt>Registration opens</dt>
                 <dd>

@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import { games } from '../../data/games'
@@ -18,7 +18,7 @@ interface EventForm {
   entrants: string
   capacity: string
   entryFee: string
-  prize: string
+  prizes: { label: string; amount: string }[]
   featured: boolean
   registrationOpens: string
   registrationCloses: string
@@ -48,7 +48,7 @@ const initialForm = (): EventForm => ({
   entrants: '0',
   capacity: '32',
   entryFee: '350',
-  prize: '15000',
+  prizes: [{ label: 'Cash prize', amount: '15000' }],
   featured: false,
   registrationOpens: '',
   registrationCloses: '',
@@ -79,7 +79,7 @@ export function AdminEventEditorPage() {
           entrants: String(existing.entrants),
           capacity: String(existing.capacity),
           entryFee: String(existing.entryFee),
-          prize: String(existing.prize),
+          prizes: (existing.prizes?.length ? existing.prizes : existing.prize > 0 ? [{ label: 'Cash prize', amount: existing.prize }] : []).map((prize) => ({ label: prize.label, amount: String(prize.amount) })),
           featured: Boolean(existing.featured),
           registrationOpens: toLocalInput(existing.registrationOpens),
           registrationCloses: toLocalInput(existing.registrationCloses),
@@ -89,11 +89,15 @@ export function AdminEventEditorPage() {
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saveError, setSaveError] = useState('')
+  const savingRef = useRef(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const update = <Key extends keyof EventForm>(key: Key, value: EventForm[Key]) => {
     setForm((current) => ({ ...current, [key]: value }))
     setErrors((current) => ({ ...current, [key]: '' }))
   }
+
+  const prizeTotal = form.prizes.reduce((total, prize) => total + Math.round((Number(prize.amount) || 0) * 100), 0) / 100
 
   const validate = (): boolean => {
     const next: Record<string, string> = {}
@@ -103,7 +107,11 @@ export function AdminEventEditorPage() {
     if (Number(form.capacity) < 2) next.capacity = 'Capacity must be at least 2.'
     if (Number(form.entrants) < 0) next.entrants = 'Entrants cannot be negative.'
     if (Number(form.entryFee) < 0) next.entryFee = 'Entry fee cannot be negative.'
-    if (Number(form.prize) < 0) next.prize = 'Prize pool cannot be negative.'
+    if (form.prizes.some((prize) => !prize.label.trim() || prize.label.trim().length > 100
+      || !/^\d+(\.\d{1,2})?$/.test(prize.amount) || !Number.isFinite(Number(prize.amount)))) {
+      next.prizes = 'Each prize needs a name and a non-negative amount with up to two decimal places.'
+    }
+    if (prizeTotal > 99999999.99) next.prizes = 'Total prize pool cannot exceed PHP 99,999,999.99.'
     if (form.description.trim().length < 20) {
       next.description = 'Add at least 20 characters of event copy.'
     }
@@ -123,6 +131,7 @@ export function AdminEventEditorPage() {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
+    if (savingRef.current) return
     if (!validate()) return
     setSaveError('')
 
@@ -138,7 +147,8 @@ export function AdminEventEditorPage() {
       entrants: Number(form.entrants),
       capacity: Number(form.capacity),
       entryFee: Number(form.entryFee),
-      prize: Number(form.prize),
+      prize: prizeTotal,
+      prizes: form.prizes.map((prize) => ({ label: prize.label.trim(), amount: Number(prize.amount) })),
       currency: 'PHP' as const,
       featured: form.featured,
       registrationOpens: toIso(form.registrationOpens) || undefined,
@@ -146,6 +156,8 @@ export function AdminEventEditorPage() {
       description: form.description.trim(),
     }
 
+    savingRef.current = true
+    setIsSaving(true)
     try {
       if (existing) {
         await updateTournament(existing.id, payload)
@@ -156,6 +168,9 @@ export function AdminEventEditorPage() {
       navigate(`/admin/events/${nextId}`)
     } catch (cause) {
       setSaveError(cause instanceof Error ? cause.message : 'Unable to save this event.')
+    } finally {
+      savingRef.current = false
+      setIsSaving(false)
     }
   }
 
@@ -406,23 +421,44 @@ export function AdminEventEditorPage() {
                   <span className="field__hint">{formatCurrency(Number(form.entryFee) || 0)}</span>
                 )}
               </label>
-              <label className="field">
-                <span className="field__label">Prize pool (PHP)</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.prize}
-                  onChange={(event) => update('prize', event.target.value)}
-                  aria-invalid={Boolean(errors.prize)}
-                />
-                {errors.prize ? (
-                  <span className="field__error">{errors.prize}</span>
-                ) : (
-                  <span className="field__hint">{formatCurrency(Number(form.prize) || 0)}</span>
-                )}
-              </label>
+              <div className="field">
+                <span className="field__label">Total cash prize pool (PHP)</span>
+                <strong>{formatCurrency(prizeTotal)}</strong>
+                <span className="field__hint">Calculated from the prizes below. Save the event to apply changes.</span>
+              </div>
             </div>
+            <details className="event-prizes-editor" open>
+              <summary>Cash prizes ({form.prizes.length})</summary>
+              <p className="field__hint">Choose a suggested award or type your own. Add, edit, or remove prizes for this event.</p>
+              <datalist id="event-prize-labels">
+                {['Champion', 'Runner-up', 'Third place', 'Fourth place', 'Participation', 'Special award', 'Cash prize'].map((label) => <option key={label} value={label} />)}
+              </datalist>
+              <datalist id="event-prize-amounts">
+                {[500, 1000, 2500, 5000, 10000, 15000].map((amount) => <option key={amount} value={amount} />)}
+              </datalist>
+              {form.prizes.length === 0 && <p>No cash prizes. Add a prize to set a cash pool.</p>}
+              {form.prizes.map((prize, index) => (
+                <div className="event-prizes-editor__row" key={index}>
+                  <label className="field">
+                    <span className="field__label">Prize {index + 1}</span>
+                    <input type="text" list="event-prize-labels" maxLength={100} required
+                      value={prize.label} placeholder="Choose or enter a prize"
+                      onChange={(event) => update('prizes', form.prizes.map((item, i) => i === index ? { ...item, label: event.target.value } : item))} />
+                  </label>
+                  <label className="field">
+                    <span className="field__label">Amount (PHP)</span>
+                    <input type="number" list="event-prize-amounts" min="0" max="99999999.99" step="0.01" required
+                      value={prize.amount} aria-invalid={Boolean(errors.prizes)}
+                      onChange={(event) => update('prizes', form.prizes.map((item, i) => i === index ? { ...item, amount: event.target.value } : item))} />
+                  </label>
+                  <button type="button" className="btn btn--ghost" aria-label={`Remove prize ${index + 1}`}
+                    onClick={() => update('prizes', form.prizes.filter((_, i) => i !== index))}>Remove</button>
+                </div>
+              ))}
+              {errors.prizes && <p className="field__error" role="alert">{errors.prizes}</p>}
+              <button type="button" className="btn btn--ghost" disabled={form.prizes.length >= 200}
+                onClick={() => update('prizes', [...form.prizes, { label: '', amount: '' }])}>Add prize</button>
+            </details>
           </section>
         </div>
 
@@ -489,8 +525,8 @@ export function AdminEventEditorPage() {
             )}
 
             <div className="admin-form__actions">
-              <button type="submit" className="btn btn--primary">
-                {existing ? 'Save changes' : 'Create event'}
+              <button type="submit" className="btn btn--primary" disabled={isSaving} aria-busy={isSaving}>
+                {isSaving ? 'Saving event…' : existing ? 'Save changes' : 'Create event'}
               </button>
               <Link to={existing ? `/admin/events/${existing.id}` : '/admin/events'} className="btn btn--ghost">
                 Cancel

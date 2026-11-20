@@ -185,9 +185,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addTournament = useCallback(async (tournament: Omit<Tournament, 'id' | 'createdAt'>): Promise<string> => {
     const { tournament: created } = await emsApi.tournaments.create(tournament)
-    await reloadAdmin()
+    // Creation has committed. A secondary catalog refresh must not invite another POST.
+    commit({
+      ...storeRef.current,
+      tournaments: [...storeRef.current.tournaments.filter((event) => event.id !== created.id), created],
+    })
+    try {
+      await reloadAdmin()
+    } catch {
+      console.warn('Event was created, but the admin catalog could not be refreshed.')
+    }
     return created.id
-  }, [reloadAdmin])
+  }, [commit, reloadAdmin])
 
   const updateTournament = useCallback(async (id: string, patch: Partial<Tournament>) => {
     await emsApi.tournaments.update(id, patch)

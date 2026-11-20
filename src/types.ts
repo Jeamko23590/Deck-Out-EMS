@@ -55,6 +55,11 @@ export interface Game {
   seasonLabel: string
 }
 
+export interface EventPrize {
+  label: string
+  amount: number
+}
+
 export interface Tournament {
   id: string
   title: string
@@ -69,6 +74,7 @@ export interface Tournament {
   capacity: number
   entryFee: number
   prize: number
+  prizes?: EventPrize[]
   currency: 'PHP'
   featured?: boolean
   registrationOpens?: string

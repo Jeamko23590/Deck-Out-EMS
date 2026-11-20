@@ -63,6 +63,13 @@ export function TournamentDetailsModal({ tournament, onClose, onResults }: Props
               <dt>Prize pool</dt>
               <dd>
                 {formatCurrency(tournament.prize)}
+                {Boolean(tournament.prizes?.length) && (
+                  <ul>
+                    {tournament.prizes?.map((prize, index) => (
+                      <li key={index}>{prize.label}: {formatCurrency(prize.amount)}</li>
+                    ))}
+                  </ul>
+                )}
               </dd>
             </div>
             <div>
